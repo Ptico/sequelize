@@ -1,0 +1,9 @@
+default: &default
+  adapter: pg
+  user: postgres
+  password: secret
+
+development:
+  database: test_db
+  template: mytemplate0
+  <<: *default

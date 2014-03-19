@@ -1,0 +1,8 @@
+{
+  "production": {
+    "adapter": "mysql",
+    "username": "ptico",
+    "password": "ololo",
+    "database": "testtest"
+  }
+}
