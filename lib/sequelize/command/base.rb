@@ -23,7 +23,7 @@ module Sequelize
       end
 
       def option(key, value)
-        if value && (value.respond_to?(:empty?) && !value.empty?)
+        if value
           separator = key[0, 2] == '--' ? '=' : ' '
           @command << "#{key}#{separator}#{value}"
         end
