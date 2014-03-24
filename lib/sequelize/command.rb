@@ -1,3 +1,5 @@
+require 'shellwords'
+
 module Sequelize
   class Command
     class << self
@@ -30,7 +32,7 @@ module Sequelize
     end
 
     def option(key, value)
-      if value.present?
+      if value
         separator = key[0, 2] == '--' ? '=' : ' '
         @command << "#{key}#{separator}#{value}"
       end
@@ -41,7 +43,7 @@ module Sequelize
     end
 
     def execute(command)
-
+      `#{command}`
     end
   end
 end
