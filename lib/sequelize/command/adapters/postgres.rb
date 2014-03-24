@@ -32,8 +32,8 @@ module Sequelize
         run('pg_dump') do
           add_connection_settings
 
-          flag '-i -s -x -O'
-          flag "--file=#{filename}"
+          flag '--schema-only --no-privileges --no-owner'
+          option '--file', filename
           flag options.database
         end
 

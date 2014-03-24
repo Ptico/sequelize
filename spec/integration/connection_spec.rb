@@ -9,14 +9,14 @@ describe 'connection' do
 
     context 'when db is not in memory' do
 
-      let(:db_path){ "#{config.root}/../tmp/test.sqlite"}
+      let(:db_path){ "#{config.root}/test.sqlite"}
 
       before(:all) do
-        FileUtils.mkdir("#{File.dirname(__FILE__)}/../tmp")
+        FileUtils.mkdir(File.join(File.dirname(__FILE__),'../tmp'))
 
         Sequelize.configure(:development) do
           connection do
-            root     File.dirname(__FILE__)
+            root     "#{File.dirname(__FILE__)}/../tmp"
             adapter  'sqlite'
             database 'test.sqlite'
           end
@@ -35,15 +35,15 @@ describe 'connection' do
       subject { described_class.new }
 
       describe '#create' do
-        it 'should create it via Sequel' do
-          expect(::Sequel).to receive(:connect).with(adapter: 'sqlite3', database: db_path)
+        it 'should create empty db file' do
           subject.create
+          expect(File.exist?(db_path)).to eq(true)
         end
       end
 
       describe '#drop' do
         it 'should delete db file' do
-          expect(File.exist?(db_path)).to eq(true)
+          subject.create
           subject.drop
           expect(File.exist?(db_path)).to eq(false)
         end
@@ -53,9 +53,12 @@ describe 'connection' do
         let(:dump_file) { 'dump.sql' }
 
         it 'should use sqlite3 command' do
+          subject.create
+
           expect(subject).to receive(:`).with(
             "sqlite3 #{db_path} .schema > #{dump_file}"
           )
+
           subject.dump dump_file
         end
       end
@@ -64,28 +67,37 @@ describe 'connection' do
         let(:dump_file) { 'dump.sql' }
 
         it 'should use sqlite3 command' do
+          subject.create
+
           expect(subject).to receive(:`).with(
             "sqlite3 #{db_path} < #{dump_file}"
           )
+
           subject.load dump_file
         end
       end
     end
 
     context 'when db in memory' do
-      before do
+      before(:all) do
         Sequelize.configure(:development) do
           connection do
             adapter  'sqlite'
             database ':memory:'
           end
-        end   
+        end  
+        Sequelize.setup(:development)
+      end
+
+      after(:all) do
+        Sequelize.instance_variable_set(:@config, nil)
+        Sequelize.instance_variable_set(:@connection_options, nil)
+        Sequelize.instance_variable_set(:@config_attributes, nil)
       end
 
       describe '#create' do
         it "don't do anything" do
-          expect(::Sequel).to_not receive(:connect)
-          subject.create
+          expect(subject.create).to eq(nil)
         end
       end
 
@@ -152,7 +164,7 @@ describe 'connection' do
 
       it 'should exec pg_dump' do
         expect(subject).to receive(:`).with(
-          "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} -i -s -x -O --file=#{dump_file} #{config.database}"
+          "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --schema-only --no-privileges --no-owner --file=#{dump_file} #{config.database}"
         )
         subject.dump dump_file
       end
