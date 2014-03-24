@@ -20,6 +20,22 @@ module Sequelize
         end
       end
 
+      def drop
+        run('dropdb') do
+          add_connection_settings
+
+          flag options.database
+        end
+      end
+
+      def dump
+
+      end
+
+      def load
+
+      end
+
     private
 
       def execute(command)
