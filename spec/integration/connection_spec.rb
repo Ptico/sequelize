@@ -1,10 +1,95 @@
 require 'spec_helper'
 require 'sequelize/command'
 require 'sequelize/command/adapters/postgres'
+require 'sequelize/command/adapters/sqlite'
 
 describe 'connection' do
-  describe 'sqlite' do
+  describe Sequelize::Command::Sqlite do
+    let(:config) { Sequelize.config.connection }
 
+    context 'when db is not in memory' do
+
+      let(:db_path){ "#{config.root}/../tmp/test.sqlite"}
+
+      before(:all) do
+        FileUtils.mkdir("#{File.dirname(__FILE__)}/../tmp")
+
+        Sequelize.configure(:development) do
+          connection do
+            root     File.dirname(__FILE__)
+            adapter  'sqlite'
+            database 'test.sqlite'
+          end
+          Sequelize.setup(:development)
+        end 
+      end
+
+      after(:all) do
+        Sequelize.instance_variable_set(:@config, nil)
+        Sequelize.instance_variable_set(:@connection_options, nil)
+        Sequelize.instance_variable_set(:@config_attributes, nil)
+
+        FileUtils.rm_r("#{File.dirname(__FILE__)}/../tmp") 
+      end
+
+      subject { described_class.new }
+
+      describe '#create' do
+        it 'should create it via Sequel' do
+          expect(::Sequel).to receive(:connect).with(adapter: 'sqlite3', database: db_path)
+          subject.create
+        end
+      end
+
+      describe '#drop' do
+        it 'should delete db file' do
+          expect(File.exist?(db_path)).to eq(true)
+          subject.drop
+          expect(File.exist?(db_path)).to eq(false)
+        end
+      end
+
+      describe '#dump' do
+        let(:dump_file) { 'dump.sql' }
+
+        it 'should use sqlite3 command' do
+          expect(subject).to receive(:`).with(
+            "sqlite3 #{db_path} .schema > #{dump_file}"
+          )
+          subject.dump dump_file
+        end
+      end
+
+      describe '#load' do
+        let(:dump_file) { 'dump.sql' }
+
+        it 'should use sqlite3 command' do
+          expect(subject).to receive(:`).with(
+            "sqlite3 #{db_path} < #{dump_file}"
+          )
+          subject.load dump_file
+        end
+      end
+    end
+
+    context 'when db in memory' do
+      before do
+        Sequelize.configure(:development) do
+          connection do
+            adapter  'sqlite'
+            database ':memory:'
+          end
+        end   
+      end
+
+      describe '#create' do
+        it "don't do anything" do
+          expect(::Sequel).to_not receive(:connect)
+          subject.create
+        end
+      end
+
+    end     
   end
 
   describe Sequelize::Command::Postgres, postgresql: true do
