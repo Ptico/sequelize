@@ -28,12 +28,24 @@ module Sequelize
         end
       end
 
-      def dump
+      def dump(filename)
+        run('pg_dump') do
+          add_connection_settings
+
+          flag '-i -s -x -O'
+          flag "--file=#{filename}"
+          flag options.database
+        end
 
       end
 
-      def load
+      def load(filename)
+        run('psql') do
+          add_connection_settings
 
+          flag "--file=#{filename}"
+          flag options.database
+        end
       end
 
     private

@@ -119,6 +119,12 @@ describe 'connection' do
       Sequelize.setup(:development)
     end
 
+    after(:all) do
+      Sequelize.instance_variable_set(:@config, nil)
+      Sequelize.instance_variable_set(:@connection_options, nil)
+      Sequelize.instance_variable_set(:@config_attributes, nil)
+    end
+
     subject { described_class.new }
 
 
