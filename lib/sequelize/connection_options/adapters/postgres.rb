@@ -3,7 +3,7 @@ module Sequelize
     class Postgres < Base
       ConnectionOptions.register(:postgres, self)
 
-      def adapter
+      def adapter_name
         :postgres
       end
 

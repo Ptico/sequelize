@@ -3,7 +3,7 @@ module Sequelize
     class Sqlite < Base
       ConnectionOptions.register(:sqlite, self)
 
-      def adapter
+      def adapter_name
         :sqlite
       end
 

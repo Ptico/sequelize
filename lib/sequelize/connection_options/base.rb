@@ -3,6 +3,11 @@ module Sequelize
     class Base
       include Adamantium
 
+      def adapter
+        config[:adapter]
+      end
+      memoize :adapter
+
       def database
         config[:database] || config[:dbname]
       end
@@ -60,7 +65,7 @@ module Sequelize
       end
 
       def properties
-        [:database, :username, :password, :host, :port, :owner, :charset, :collation]
+        [:adapter, :database, :username, :password, :host, :port, :owner, :charset, :collation]
       end
       memoize :properties
     end

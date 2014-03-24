@@ -8,6 +8,14 @@ shared_examples_for 'connection options' do
     it { expect(subject).to include(username: 'foo', password: 'bar') }
   end
 
+  describe '#adapter' do
+    subject { instance.adapter }
+
+    let(:options) { { adapter: 'do:postgres' } }
+
+    it { expect(subject).to eql('do:postgres') }
+  end
+
   describe '#database' do
     subject { instance.database }
 

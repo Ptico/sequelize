@@ -3,7 +3,7 @@ module Sequelize
     class Mysql < Base
       ConnectionOptions.register(:mysql, self)
 
-      def adapter
+      def adapter_name
         :mysql
       end
 
