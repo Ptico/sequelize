@@ -1,6 +1,6 @@
 module Sequelize
   class Command
-    class Postgres < self
+    class Postgres < Base
       Command.register(:postgres, self)
 
       def create
@@ -29,16 +29,16 @@ module Sequelize
       end
 
       def with_pgpassword
-        ENV['PGPASSWORD'] = options.password unless options.password.blank?
+        ENV['PGPASSWORD'] = options.password unless options.password.empty?
         yield
       ensure
-        ENV['PGPASSWORD'] = nil unless options.password.blank?
+        ENV['PGPASSWORD'] = nil unless options.password.empty?
       end
 
       def add_connection_settings
         option '--username', options.username
         option '--host',     options.host
-        option '--port',     options.port.to_s
+        option '--port',     options.port
       end
 
     end
