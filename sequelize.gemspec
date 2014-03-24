@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency('sequel')
   spec.add_dependency('adamantium')
-  spec.add_dependency('sequoia')
+  spec.add_dependency('sequoia', '~> 0.2.0')
 
   spec.add_development_dependency "bundler", "~> 1.5"
   spec.add_development_dependency "rake"

@@ -33,6 +33,12 @@ module Sequelize
       end
       memoize :maintenance_db
 
+    private
+
+      def properties
+        super + [:encoding, :locale, :ctype, :template, :tablespace, :maintenance_db]
+      end
+
     end
   end
 end

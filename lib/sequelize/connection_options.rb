@@ -9,9 +9,11 @@ module Sequelize
       end
 
       def [](adapter)
-        require "sequelize/connection_options/#{adapter}"
+        require "sequelize/connection_options/adapters/#{adapter}"
         @registry[adapter.to_sym]
       end
     end
   end
 end
+
+require 'sequelize/connection_options/reader'

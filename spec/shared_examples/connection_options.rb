@@ -1,9 +1,11 @@
 shared_examples_for 'connection options' do
 
-  describe '#initialize' do
-    let(:options) { { 'database' => 'foo' } }
+  describe '#to_hash' do
+    subject { instance.to_hash }
 
-    it { expect(instance.database).to eql('foo') }
+    let(:options) { { user: 'foo', pass: 'bar' } }
+
+    it { expect(subject).to include(username: 'foo', password: 'bar') }
   end
 
   describe '#database' do
@@ -61,12 +63,6 @@ shared_examples_for 'connection options' do
       let(:options) { { host: 'localhost' } }
 
       it { expect(subject).to eql('localhost') }
-    end
-
-    context 'when `path`' do
-      let(:options) { { path: '/tmp/db.sock' } }
-
-      it { expect(subject).to eql('/tmp/db.sock') }
     end
 
     context 'when `socket`' do

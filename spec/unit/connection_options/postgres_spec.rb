@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-require 'sequelize/connection_options/postgres'
+require 'sequelize/connection_options/adapters/postgres'
 
 describe Sequelize::ConnectionOptions::Postgres do
   let(:instance) { described_class.new(options) }
@@ -77,6 +77,14 @@ describe Sequelize::ConnectionOptions::Postgres do
 
       it { expect(subject).to eql('pg_maintenance') }
     end
+  end
+
+  describe '#to_hash' do
+    subject { instance.to_hash }
+
+    let(:options) { { template: 'mytemplate' } }
+
+    it { expect(subject).to include(template: 'mytemplate') }
   end
 
 end

@@ -19,7 +19,7 @@ module Sequelize
       memoize :password
 
       def host
-        config[:host] || config[:path] || config[:socket]
+        config[:host] || config[:socket]
       end
       memoize :host
 
@@ -43,15 +43,26 @@ module Sequelize
       end
       memoize :collation
 
+      def to_hash
+        properties.each_with_object({}) do |prop, hash|
+          value = public_send(prop)
+          hash[prop] = value if value
+        end
+      end
+      memoize :to_hash
+
     private
 
       attr_reader :config
 
-      def initialize(options)
-        @config = options.each_with_object({}) do |pair, conf|
-          conf[pair.first.to_sym] = pair.last
-        end
+      def initialize(config)
+        @config = config
       end
+
+      def properties
+        [:database, :username, :password, :host, :port, :owner, :charset, :collation]
+      end
+      memoize :properties
     end
 
   end
