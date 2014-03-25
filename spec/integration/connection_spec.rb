@@ -52,14 +52,32 @@ describe 'connection' do
       describe '#dump' do
         let(:dump_file) { 'dump.sql' }
 
-        it 'should use sqlite3 command' do
-          subject.create
+        context 'schema dump' do
 
-          expect(subject).to receive(:`).with(
-            "sqlite3 #{db_path} .schema > #{dump_file}"
-          )
+          it 'should use sqlite3 command with .schema' do
+            subject.create
 
-          subject.dump dump_file
+            expect(subject).to receive(:`).with(
+              "sqlite3 #{db_path} .schema > #{dump_file}"
+            )
+
+            subject.dump_schema dump_file
+          end
+
+        end
+
+        context 'full dump' do
+
+          it 'should use sqlite3 command with .schema' do
+            subject.create
+
+            expect(subject).to receive(:`).with(
+              "sqlite3 #{db_path} .dump > #{dump_file}"
+            )
+
+            subject.dump dump_file
+          end
+          
         end
       end
 
@@ -162,11 +180,22 @@ describe 'connection' do
     describe '#dump' do
       let(:dump_file) { 'dump.sql' }
 
-      it 'should exec pg_dump' do
-        expect(subject).to receive(:`).with(
-          "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --schema-only --no-privileges --no-owner --file=#{dump_file} #{config.database}"
-        )
-        subject.dump dump_file
+      context 'schema' do
+        it 'should exec pg_dump' do
+          expect(subject).to receive(:`).with(
+            "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --schema-only --no-privileges --no-owner --file=#{dump_file} #{config.database}"
+          )
+          subject.dump_schema dump_file
+        end
+      end
+
+      context 'full' do
+        it 'should exec pg_dump' do
+          expect(subject).to receive(:`).with(
+            "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --no-privileges --no-owner --file=#{dump_file} #{config.database}"
+          )
+          subject.dump dump_file
+        end
       end
     end
     

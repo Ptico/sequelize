@@ -28,7 +28,7 @@ module Sequelize
         end
       end
 
-      def dump(filename)
+      def dump_schema(filename)
         run('pg_dump') do
           add_connection_settings
 
@@ -36,7 +36,16 @@ module Sequelize
           option '--file', filename
           flag options.database
         end
+      end
 
+      def dump(filename)
+        run('pg_dump') do
+          add_connection_settings
+
+          flag '--no-privileges --no-owner'
+          option '--file', filename
+          flag options.database
+        end
       end
 
       def load(filename)
