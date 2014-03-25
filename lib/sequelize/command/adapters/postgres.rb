@@ -28,12 +28,30 @@ module Sequelize
         end
       end
 
-      def dump
+      def dump_schema(filename)
+        run('pg_dump') do
+          add_connection_settings
 
+          flag '--schema-only'
+          add_dump_options filename
+        end
       end
 
-      def load
+      def dump(filename)
+        run('pg_dump') do
+          add_connection_settings
 
+          add_dump_options filename
+        end
+      end
+
+      def load(filename)
+        run('psql') do
+          add_connection_settings
+
+          option '--file', filename
+          flag options.database
+        end
       end
 
     private
@@ -55,6 +73,13 @@ module Sequelize
         option '--username', options.username
         option '--host',     options.host
         option '--port',     options.port
+      end
+
+      def add_dump_options(filename)
+        flag '--no-privileges'
+        flag '--no-owner'
+        option '--file', filename
+        flag options.database
       end
 
     end

@@ -45,7 +45,7 @@ module Sequelize
       end
 
       def read_db_config
-        if File.exists?(config_file)
+        if File.exist?(config_file)
           case File.extname(config_file)
             when '.yml', '.yaml'
               read_yaml_config

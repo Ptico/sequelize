@@ -7,4 +7,6 @@ group :development do
   gem 'rspec', '~> 3.0.0.beta2'
 
   gem 'pry'
+
+  gem 'sqlite3'
 end
