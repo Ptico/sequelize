@@ -18,31 +18,30 @@ module Sequelize
       def dump_schema(filename)
         run('sqlite3') do
           flag db_path
-          flag '.schema >'
-          flag filename
+          flag '.schema'
+          option '>', filename
         end
       end
 
       def dump(filename)
         run('sqlite3') do
           flag db_path
-          flag '.dump >'
-          flag filename
+          flag '.dump'
+          option '>', filename
         end
       end
 
       def load(filename)
         run('sqlite3') do
           flag db_path
-          flag '<'
-          flag filename
+          option '<', filename
         end
       end
 
       private
 
       def in_memory?
-        options.database==':memory:'
+        options.database == ':memory:'
       end
       memoize :in_memory?
 

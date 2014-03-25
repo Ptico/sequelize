@@ -32,9 +32,8 @@ module Sequelize
         run('pg_dump') do
           add_connection_settings
 
-          flag '--schema-only --no-privileges --no-owner'
-          option '--file', filename
-          flag options.database
+          flag '--schema-only'
+          add_dump_options filename
         end
       end
 
@@ -42,9 +41,7 @@ module Sequelize
         run('pg_dump') do
           add_connection_settings
 
-          flag '--no-privileges --no-owner'
-          option '--file', filename
-          flag options.database
+          add_dump_options filename
         end
       end
 
@@ -52,7 +49,7 @@ module Sequelize
         run('psql') do
           add_connection_settings
 
-          flag "--file=#{filename}"
+          option '--file', filename
           flag options.database
         end
       end
@@ -76,6 +73,13 @@ module Sequelize
         option '--username', options.username
         option '--host',     options.host
         option '--port',     options.port
+      end
+
+      def add_dump_options(filename)
+        flag '--no-privileges'
+        flag '--no-owner'
+        option '--file', filename
+        flag options.database
       end
 
     end
