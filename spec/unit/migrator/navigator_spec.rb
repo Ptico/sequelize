@@ -39,6 +39,11 @@ describe Sequelize::Migrator::Navigator do
       expect(navigator.version).to eq(0)
     end
 
+    it 'should set to last version' do
+      navigator.last
+      expect(navigator.version).to eq(2)
+    end
+
   end
 
   context 'timestamp filenames' do
@@ -73,6 +78,11 @@ describe Sequelize::Migrator::Navigator do
     it "shouldn't switch lower than init version" do
       5.times{ navigator.down }
       expect(navigator.version).to eq(0)
+    end
+
+    it 'should set to last version' do
+      navigator.last
+      expect(navigator.version).to eq(20140405)
     end
   end
 

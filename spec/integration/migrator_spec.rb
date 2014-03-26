@@ -8,9 +8,9 @@ describe Sequelize::Migrator do
         Sequelize.instance_variable_set(:@config_attributes, nil)
   end
   
-  let(:db) { Sequelize.connect! }
+  let(:db) { Sequelize.connection }
 
-  let(:migrator) { Sequelize::Migrator.new}
+  let(:migrator) {Sequelize::Migrator.new}
 
   context 'with version based migrations' do
       before(:each) do
@@ -22,35 +22,34 @@ describe Sequelize::Migrator do
           end  
           Sequelize.setup(:test)
         end 
+        Sequelize.connect!
       end
 
       it 'should migrate to last version' do
         migrator.migrate
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables.sort).to eq([:schema_info, :first, :second].sort)
       end
 
       it 'should migrate up' do
         migrator.migrate_up
-        expect(db.tables).to eq(['first'])
-        migrator.migrate_up
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables).to eq([:schema_info, :first].sort)
       end
 
       it 'should migrate up by steps' do
         migrator.migrate_up 2
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables.sort).to eq([:schema_info, :first, :second].sort)
       end
 
       it 'should migrate down' do
         migrator.migrate
         migrator.migrate_down
-        expect(db.tables).to eq(['first'])
+        expect(Sequelize.connection.tables).to eq([:schema_info, :first].sort)
       end
 
       it 'should migrate down by steps' do
         migrator.migrate
         migrator.migrate_down 2
-        expect(db.tables).to eq([])
+        expect(Sequelize.connection.tables).to eq([])
       end
   end
 
@@ -68,31 +67,29 @@ describe Sequelize::Migrator do
 
       it 'should migrate to last version' do
         migrator.migrate
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables.sort).to eq([:schema_migrations, :first, :second].sort)
       end
 
       it 'should migrate up' do
         migrator.migrate_up
-        expect(db.tables).to eq(['first'])
-        migrator.migrate_up
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables).to eq([:schema_migrations, :first].sort)
       end
 
       it 'should migrate up by steps' do
         migrator.migrate_up 2
-        expect(db.tables.sort).to eq(['first', 'second'])
+        expect(Sequelize.connection.tables.sort).to eq([:schema_migrations, :first, :second].sort)
       end
 
       it 'should migrate down' do
         migrator.migrate
         migrator.migrate_down
-        expect(db.tables).to eq(['first'])
+        expect(Sequelize.connection.tables).to eq([:schema_migrations, :first].sort)
       end
 
       it 'should migrate down by steps' do
         migrator.migrate
         migrator.migrate_down 2
-        expect(db.tables).to eq([])
+        expect(Sequelize.connection.tables).to eq([])
       end
   end
 end

@@ -7,15 +7,19 @@ module Sequelize
       end
 
       def up
-        @current += 1 if @current < @versions.size-1
+        @current += 1 if @current < @versions.size - 1
       end
 
       def down
-        @current -=1 if @current > 0
+        @current -= 1 if @current > 0
       end
 
       def set(new_version)
         @current = @versions.find_index(new_version)
+      end
+
+      def last
+        @current = @versions.size - 1
       end
 
     private
@@ -26,7 +30,7 @@ module Sequelize
       end
 
       def get_versions(dir)
-        pattern = dir+'/*.rb'
+        pattern = dir + '/*.rb'
         entries = Dir.glob(pattern)
 
         versions = entries.map do |item| 
