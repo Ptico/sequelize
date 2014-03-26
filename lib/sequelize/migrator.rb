@@ -1,55 +1,72 @@
 require 'memoizable'
+require 'sequel/extensions/migration'
 
 module Sequelize
   class Migrator
     include Memoizable
 
     def migrate(version=nil)
-      opts = version ? options.merge(version: version) : options
+      @navigator.last unless version
 
-      Sequel::Migrator.run(Sequelize.connection, migrations_dir, options)
+      version ||= @navigator.version
+
+      opts = options.merge(target: version)
+
+      Sequel::Migrator.run(db, migrations_dir, opts)
     end
 
     def migrate_up(step=nil)
-      version = step ? get_version(step, :+) : nil
-      migrate(version)
+      @navigator.up step
+      migrate(@navigator.version)
     end
 
     def migrate_down(step=nil)
-      migrate(step ? get_version(step, :-) : 0)
+      @navigator.down step
+      migrate(@navigator.version)
     end
 
     def current_version
-      Sequelize.connection[:schema_migrations].first[:version]
+      version = 0
+
+      version = db[migration_table].map(migration_column).first if db.table_exists? migration_table
+
+      version
     end
-    memoize :current_version
 
   private
 
     attr_reader :config, :options
 
     def initialize(options={}, config=Sequelize.config)
-      @config  = config
-      @options = options
+      @config    = config
+      @options   = options
+      @navigator = Navigator.new(migrations_dir)
+
+      @navigator.set(current_version)
     end
 
-    def get_version(step, dir)
-      i = versions.at(current_version)
-      versions[i.public_send(dir, step)]
+    def migrator
+      Sequel::Migrator.migrator_class(migrations_dir)
     end
+
+    def migration_table
+      migrator::DEFAULT_SCHEMA_TABLE
+    end
+    memoize :migration_table
+
+    def migration_column
+      migrator::DEFAULT_SCHEMA_COLUMN
+    end
+    memoize :migration_column
 
     def migrations_dir
-      dir = config.migrations_dir || 'db/migrations'
+      dir = @config.connection.migrations_dir || 'db/migrations'
       config.root ? File.join(config.root, dir) : dir
     end
     memoize :migrations_dir
 
-    def versions
-      Dir[File.join(migrations_dir, '*.rb')].map do |file|
-        File.basename(file).split(Sequel::Migrator::MIGRATION_SPLITTER).first
-      end.sort
+    def db
+      Sequelize.connection
     end
-    memoize :versions
-
   end
 end
