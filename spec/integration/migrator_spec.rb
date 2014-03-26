@@ -32,7 +32,7 @@ describe Sequelize::Migrator do
 
       it 'should migrate up' do
         migrator.migrate_up
-        expect(Sequelize.connection.tables).to eq([:schema_info, :first].sort)
+        expect(Sequelize.connection.tables.sort).to eq([:schema_info, :first].sort)
       end
 
       it 'should migrate up by steps' do
@@ -43,13 +43,13 @@ describe Sequelize::Migrator do
       it 'should migrate down' do
         migrator.migrate
         migrator.migrate_down
-        expect(Sequelize.connection.tables).to eq([:schema_info, :first].sort)
+        expect(Sequelize.connection.tables.sort).to eq([:schema_info, :first].sort)
       end
 
       it 'should migrate down by steps' do
         migrator.migrate
         migrator.migrate_down 2
-        expect(Sequelize.connection.tables).to eq([])
+        expect(Sequelize.connection.tables).to eq([:schema_info])
       end
   end
 
@@ -72,7 +72,7 @@ describe Sequelize::Migrator do
 
       it 'should migrate up' do
         migrator.migrate_up
-        expect(Sequelize.connection.tables).to eq([:schema_migrations, :first].sort)
+        expect(Sequelize.connection.tables.sort).to eq([:schema_migrations, :first].sort)
       end
 
       it 'should migrate up by steps' do
@@ -83,13 +83,13 @@ describe Sequelize::Migrator do
       it 'should migrate down' do
         migrator.migrate
         migrator.migrate_down
-        expect(Sequelize.connection.tables).to eq([:schema_migrations, :first].sort)
+        expect(Sequelize.connection.tables.sort).to eq([:schema_migrations, :first].sort)
       end
 
       it 'should migrate down by steps' do
         migrator.migrate
         migrator.migrate_down 2
-        expect(Sequelize.connection.tables).to eq([])
+        expect(Sequelize.connection.tables.sort).to eq([:schema_migrations])
       end
   end
 end

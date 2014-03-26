@@ -17,7 +17,7 @@ module Sequelize
 
       opts = options.merge(target: version)
 
-      Sequel::Migrator.run(Sequelize.connection, migrations_dir, options)
+      Sequel::Migrator.apply(Sequelize.connection, migrations_dir, version)
     end
 
     def migrate_up(step=nil)
