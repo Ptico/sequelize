@@ -39,6 +39,16 @@ describe Sequelize::Migrator::Navigator do
       expect(navigator.version).to eq(0)
     end
 
+    it 'should switch higher by steps' do
+      navigator.up 2
+      expect(navigator.version).to eq(2)
+    end
+
+    it 'should switch lower by steps' do
+      navigator.up 0
+      expect(navigator.version).to eq(0)
+    end
+
     it 'should set to last version' do
       navigator.last
       expect(navigator.version).to eq(2)
@@ -83,6 +93,16 @@ describe Sequelize::Migrator::Navigator do
     it 'should set to last version' do
       navigator.last
       expect(navigator.version).to eq(20140405)
+    end
+
+    it 'should switch higher by steps' do
+      navigator.up 2
+      expect(navigator.version).to eq(20140405)
+    end
+
+    it 'should switch lower by steps' do
+      navigator.up 0
+      expect(navigator.version).to eq(0)
     end
   end
 

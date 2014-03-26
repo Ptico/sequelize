@@ -6,12 +6,12 @@ module Sequelize
         @versions[@current]
       end
 
-      def up
-        @current += 1 if @current < @versions.size - 1
+      def up(step=1)
+        (step ? step : 1).times { @current += 1 if @current < @versions.size - 1 }
       end
 
-      def down
-        @current -= 1 if @current > 0
+      def down(step=1)
+        (step ? step : 1).times { @current -= 1 if @current > 0 }
       end
 
       def set(new_version)

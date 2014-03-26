@@ -1,10 +1,5 @@
 require 'memoizable'
 require 'sequel/extensions/migration'
-# INFO
-# Sequel::Migrator creates a table 
-# (schema_info for integer migrations 
-# and schema_migrations for timestamped migrations). 
-# in the database to keep track of the current migration version.
 
 module Sequelize
   class Migrator
@@ -17,26 +12,24 @@ module Sequelize
 
       opts = options.merge(target: version)
 
-      Sequel::Migrator.apply(Sequelize.connection, migrations_dir, version)
+      Sequel::Migrator.run(db, migrations_dir, opts)
     end
 
     def migrate_up(step=nil)
-      @navigator.up
-      (step - 1).times { @navigator.up } if step
+      @navigator.up step
       migrate(@navigator.version)
     end
 
     def migrate_down(step=nil)
-      @navigator.down
-      (step - 1).times { @navigator.down } if step
+      @navigator.down step
       migrate(@navigator.version)
     end
 
     def current_version
       version = 0
-      db = Sequelize.connection
-      version = db[:schema_migrations].first[:version] if db.tables.include? 'schema_migrations'
-      version = db[:schema_info].first[:version] if db.tables.include? 'schema_info'
+
+      version = db[migration_table].map(migration_column).first if db.table_exists? migration_table
+
       version
     end
 
@@ -52,11 +45,28 @@ module Sequelize
       @navigator.set(current_version)
     end
 
+    def migrator
+      Sequel::Migrator.migrator_class(migrations_dir)
+    end
+
+    def migration_table
+      migrator::DEFAULT_SCHEMA_TABLE
+    end
+    memoize :migration_table
+
+    def migration_column
+      migrator::DEFAULT_SCHEMA_COLUMN
+    end
+    memoize :migration_column
+
     def migrations_dir
       dir = @config.connection.migrations_dir || 'db/migrations'
       config.root ? File.join(config.root, dir) : dir
     end
     memoize :migrations_dir
 
+    def db
+      Sequelize.connection
+    end
   end
 end
