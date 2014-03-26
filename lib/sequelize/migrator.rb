@@ -1,5 +1,11 @@
 require 'memoizable'
 
+# INFO
+# Sequel::Migrator creates a table 
+# (schema_info for integer migrations 
+# and schema_migrations for timestamped migrations). 
+# in the database to keep track of the current migration version.
+
 module Sequelize
   class Migrator
     include Memoizable

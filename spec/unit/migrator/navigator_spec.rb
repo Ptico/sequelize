@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'sequelize/migrator/navigator'
+
 describe Sequelize::Migrator::Navigator do
   let(:navigator) { described_class.new(dir) }
   let(:migrations_dir) { File.expand_path('./', 'spec/fixtures/test_migrations') }
