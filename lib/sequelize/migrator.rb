@@ -59,7 +59,7 @@ module Sequelize
     end
 
     def migrations_dir
-      dir = @config.connection.migrations_dir || 'db/migrations'
+      dir = @config.migrations_dir || 'db/migrations'
       config.root ? File.join(config.root, dir) : dir
     end
     memoize :migrations_dir

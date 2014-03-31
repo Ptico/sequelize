@@ -1,3 +1,8 @@
+require 'sequel'
+require 'sequelize/command'
+require 'sequelize/migrator'
+require 'thor'
+
 class Db < Thor
   class_option :environment, type: :string, aliases: '-e', default: 'development'
 
@@ -11,18 +16,20 @@ class Db < Thor
     Sequelize::Command.new.drop
   end
 
+  desc 'dump FILE', 'Dump database to FILE'
+
   class Migrate < Thor
-    desc 'up', 'Perform migration up'
-    def up
-      migrator.migrate_up
+    desc 'up [STEPS]', 'Perform migration up (default: to latest version)'
+    def up(steps=nil)
+      migrator.migrate_up(steps)
     end
 
-    desc 'down', 'Perform migration down'
-    def down
-      migrator.migrate_down
+    desc 'down [STEPS]', 'Perform migration down (default: 1 step), 0 for full rollback'
+    def down(steps=1)
+      migrator.migrate_down(steps)
     end
 
-    desc 'to', 'Perform migration to specified version'
+    desc 'to VERSION', 'Perform migration to specified version'
     def to(version)
       migrator.migrate(version)
     end
@@ -34,24 +41,45 @@ class Db < Thor
     end
   end
 
-  desc 'rollback', 'Perform rollback'
-  def rollback
+  class Schema < Thor
+    desc 'version', 'Print current schema version'
+    def version
+      puts Sequelize::Migrator.new.current_version
+    end
 
+    desc 'dump FILE', 'Dump schema to file'
+    def dump(file)
+      Sequelize::Command.new.dump_schema(file)
+    end
+
+    desc 'load FILE', 'Load schema from file'
+    def load(file)
+      Db.new.create
+      Sequelize::Command.new.load(file)
+    end
   end
 
-  desc 'nuke', 'Drop all tables'
-  def nuke
+  desc 'dump FILE', 'Dump database to file'
+  def dump(file)
+    Sequelize::Command.new.dump(file)
+  end
 
+  desc 'load FILE', 'Load database from file'
+  def load(file)
+    create
+    Sequelize::Command.new.load(file)
+  end
+
+  desc 'nuke', 'Drop all data and reset schema'
+  def nuke
+    drop
+    create
   end
 
   desc 'reset', 'Nuke then migrate database'
   def reset
-
-  end
-
-  desc 'version', 'Print current schema version'
-  def version
-    puts Sequelize::Migrator.new.current_version
+    nuke
+    Migrate.new.up
   end
 
 private

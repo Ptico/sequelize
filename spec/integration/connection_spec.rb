@@ -20,8 +20,9 @@ describe 'connection' do
             adapter  'sqlite'
             database 'test.sqlite'
           end
+
           Sequelize.setup(:development)
-        end 
+        end
       end
 
       after(:all) do
@@ -29,7 +30,7 @@ describe 'connection' do
         Sequelize.instance_variable_set(:@connection_options, nil)
         Sequelize.instance_variable_set(:@config_attributes, nil)
 
-        FileUtils.rm_r("#{File.dirname(__FILE__)}/../tmp") 
+        FileUtils.rm_r("#{File.dirname(__FILE__)}/../tmp")
       end
 
       subject { described_class.new }
@@ -77,7 +78,7 @@ describe 'connection' do
 
             subject.dump dump_file
           end
-          
+
         end
       end
 
@@ -103,7 +104,7 @@ describe 'connection' do
             adapter  'sqlite'
             database ':memory:'
           end
-        end  
+        end
         Sequelize.setup(:development)
       end
 
@@ -119,7 +120,7 @@ describe 'connection' do
         end
       end
 
-    end     
+    end
   end
 
   describe Sequelize::Command::Postgres, postgresql: true do
@@ -129,13 +130,13 @@ describe 'connection' do
     before do
       Sequelize.configure(:development) do
         connection do
-          adapter        'postgres' 
-          database       'testtest' 
-          encoding       'utf-8' 
-          locale         'ru_RU.UTF-8' 
-          username       'postgres' 
-          password       'ololo' 
-          host           'localhost' 
+          adapter        'postgres'
+          database       'testtest'
+          encoding       'utf-8'
+          locale         'ru_RU.UTF-8'
+          username       'postgres'
+          password       'ololo'
+          host           'localhost'
           port           5432
           owner          'base_owner'
           maintenance_db 'somedb'
@@ -198,7 +199,7 @@ describe 'connection' do
         end
       end
     end
-    
+
     describe '#load' do
       let(:dump_file) { 'dump.sql' }
 
@@ -209,7 +210,7 @@ describe 'connection' do
         subject.load dump_file
       end
     end
- 
+
   end
 
   describe 'mysql', mysql: true do

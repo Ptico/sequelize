@@ -32,12 +32,12 @@ module Sequelize
       end
 
       def up_index(step)
-        index = step.nil? ? -1 : (current_index + step)
+        index = step.nil? ? -1 : (current_index + step.to_i)
         index > max ? max : index
       end
 
       def down_index(step)
-        index = step.nil? ? 0 : (current_index - step)
+        index = step.nil? ? 0 : (current_index - step.to_i)
         index < 0 ? 0 : index
       end
 

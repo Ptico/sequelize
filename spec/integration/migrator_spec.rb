@@ -6,10 +6,11 @@ describe Sequelize::Migrator do
     dir = File.join(File.dirname(__FILE__), '../fixtures/test_migrations', migrations_dir)
 
     Sequelize.configure(:test) do
+      migrations_dir dir
+
       connection do
         adapter  'sqlite'
         database ':memory:'
-        migrations_dir dir
       end
 
       Sequelize.setup(:test)
@@ -36,18 +37,21 @@ describe Sequelize::Migrator do
     context 'from scratch' do
       it 'should migrate to last version' do
         migrator.migrate
+
         expect(subject).to eq(4)
         expect(db.table_exists?(:fourth)).to be_truthy
       end
 
       it 'should migrate up to latest version' do
         migrator.migrate_up
+
         expect(subject).to eq(4)
         expect(db.table_exists?(:fourth)).to be_truthy
       end
 
       it 'should migrate up to n steps' do
         migrator.migrate_up(2)
+
         expect(subject).to eq(2)
         expect(db.table_exists?(:fourth)).to be_falsy
         expect(db.table_exists?(:second)).to be_truthy
@@ -61,18 +65,21 @@ describe Sequelize::Migrator do
 
       it 'should migrate to last version' do
         migrator.migrate
+
         expect(subject).to eq(4)
         expect(db.table_exists?(:fourth)).to be_truthy
       end
 
       it 'should migrate up to latest version' do
         migrator.migrate_up
+
         expect(subject).to eq(4)
         expect(db.table_exists?(:fourth)).to be_truthy
       end
 
       it 'should migrate up to n steps' do
         migrator.migrate_up(1)
+
         expect(subject).to eq(3)
         expect(db.table_exists?(:fourth)).to be_falsy
         expect(db.table_exists?(:third)).to be_truthy
@@ -80,6 +87,7 @@ describe Sequelize::Migrator do
 
       it 'should migrate down to scratch' do
         migrator.migrate_down
+
         expect(subject).to eql(0)
         expect(db.table_exists?(:first)).to be_falsy
         expect(db.table_exists?(:second)).to be_falsy
@@ -87,6 +95,7 @@ describe Sequelize::Migrator do
 
       it 'should migrate down to n steps' do
         migrator.migrate_down(1)
+
         expect(subject).to eql(1)
         expect(db.table_exists?(:first)).to be_truthy
         expect(db.table_exists?(:second)).to be_falsy
