@@ -1,4 +1,4 @@
-require 'sequel'
+require 'sequelize'
 require 'sequelize/command'
 require 'sequelize/migrator'
 require 'thor'
@@ -80,12 +80,6 @@ class Db < Thor
   def reset
     nuke
     Migrate.new.up
-  end
-
-private
-
-  def db
-    Sequelize.connection
   end
 
 end
