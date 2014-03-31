@@ -1,44 +1,44 @@
 module Sequelize
   class Migrator
     class Navigator
+      include Memoizable
 
-      def version
-        @versions[@current]
+      attr_reader :migration_dir, :current_version, :current_index
+
+      def up(step=nil)
+        versions[up_index(step)]
       end
 
-      def up(step=1)
-        (step ? step : 1).times { @current += 1 if @current < @versions.size - 1 }
+      def down(step=nil)
+        versions[down_index(step)]
       end
 
-      def down(step=1)
-        (step ? step : 1).times { @current -= 1 if @current > 0 }
+      def versions
+        Dir.glob(File.join(migration_dir, '*.rb')).map do |item|
+          File.basename(item).split('_').first.to_i
+        end.sort.unshift(0)
       end
-
-      def set(new_version)
-        @current = @versions.find_index(new_version)
-      end
-
-      def last
-        @current = @versions.size - 1
-      end
+      memoize :versions
 
     private
 
-      def initialize(dir)
-        @current  = 0
-        @versions = [@current] + get_versions(dir)
+      attr_reader :max
+
+      def initialize(migration_dir, current_version)
+        @migration_dir   = migration_dir
+        @current_version = current_version
+        @current_index   = versions.index(current_version)
+        @max             = versions.length - 1
       end
 
-      def get_versions(dir)
-        pattern = dir + '/*.rb'
-        entries = Dir.glob(pattern)
+      def up_index(step)
+        index = step.nil? ? -1 : (current_index + step)
+        index > max ? max : index
+      end
 
-        versions = entries.map do |item| 
-          name = File.basename(item)
-          name.split('_')[0].to_i 
-        end
-        
-        versions.sort
+      def down_index(step)
+        index = step.nil? ? 0 : (current_index - step)
+        index < 0 ? 0 : index
       end
 
     end

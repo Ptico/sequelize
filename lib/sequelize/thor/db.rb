@@ -11,10 +11,27 @@ class Db < Thor
     Sequelize::Command.new.drop
   end
 
-  desc 'migrate', 'Perform migration'
-  method_option :version, type: :numeric, aliases: '-v', banner: 'Migrate to specified version'
-  def migrate
+  class Migrate < Thor
+    desc 'up', 'Perform migration up'
+    def up
+      migrator.migrate_up
+    end
 
+    desc 'down', 'Perform migration down'
+    def down
+      migrator.migrate_down
+    end
+
+    desc 'to', 'Perform migration to specified version'
+    def to(version)
+      migrator.migrate(version)
+    end
+
+  private
+
+    def migrator
+      Sequelize::Migrator.new
+    end
   end
 
   desc 'rollback', 'Perform rollback'
@@ -34,7 +51,7 @@ class Db < Thor
 
   desc 'version', 'Print current schema version'
   def version
-
+    puts Sequelize::Migrator.new.current_version
   end
 
 private

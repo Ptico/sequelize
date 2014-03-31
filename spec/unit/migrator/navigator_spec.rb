@@ -2,107 +2,256 @@ require 'spec_helper'
 require 'sequelize/migrator/navigator'
 
 describe Sequelize::Migrator::Navigator do
-  let(:navigator) { described_class.new(dir) }
+  let(:instance) { described_class.new(dir, current_version) }
+
   let(:migrations_dir) { File.expand_path('./', 'spec/fixtures/test_migrations') }
 
-  context 'version filenames' do
-    let(:dir) { File.join(migrations_dir, 'integer') }
+  describe '#up' do
+    subject { instance.up(to) }
 
-    it 'should at start has 0 version number' do
-      expect(navigator.version).to eq(0)
+    context 'when integer migrations' do
+      let(:dir) { File.join(migrations_dir, 'integer') }
+
+      context 'from scratch' do
+        let(:current_version) { 0 }
+
+        context 'to latest' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(4) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(1) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(2) }
+        end
+
+        context 'to latest + 1' do
+          let(:to) { 5 }
+
+          it { expect(subject).to eql(4) }
+        end
+      end
+
+      context 'from n position' do
+        let(:current_version) { 1 }
+
+        context 'to latest' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(4) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(2) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(3) }
+        end
+
+        context 'to latest + 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(4) }
+        end
+      end
+
     end
 
-    it 'should support version set' do
-      navigator.set(1)
-      expect(navigator.version).to eq(1)
-    end
+    context 'when timestamped migrations' do
+      let(:dir) { File.join(migrations_dir, 'timestamp') }
 
-    it 'should show next version' do
-      navigator.up
-      expect(navigator.version).to eq(1)
-    end
+      context 'from scratch' do
+        let(:current_version) { 0 }
 
-    it 'should show previous version' do
-      navigator.up
-      navigator.up
-      navigator.down
-      expect(navigator.version).to eq(1)
-    end
+        context 'to latest' do
+          let(:to) { nil }
 
-    it "shouldn't switch higher than last version" do
-      5.times{ navigator.up }
-      expect(navigator.version).to eq(2)
-    end
+          it { expect(subject).to eql(20140512) }
+        end
 
-    it "shouldn't switch lower than init version" do
-      5.times{ navigator.down }
-      expect(navigator.version).to eq(0)
-    end
+        context '1 step' do
+          let(:to) { 1 }
 
-    it 'should switch higher by steps' do
-      navigator.up 2
-      expect(navigator.version).to eq(2)
-    end
+          it { expect(subject).to eql(20140326) }
+        end
 
-    it 'should switch lower by steps' do
-      navigator.up 0
-      expect(navigator.version).to eq(0)
-    end
+        context 'n steps' do
+          let(:to) { 2 }
 
-    it 'should set to last version' do
-      navigator.last
-      expect(navigator.version).to eq(2)
-    end
+          it { expect(subject).to eql(20140405) }
+        end
 
+        context 'to latest + 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(20140512) }
+        end
+      end
+
+      context 'from n position' do
+        let(:current_version) { 20140326 }
+
+        context 'to latest' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(20140512) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(20140405) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(20140510) }
+        end
+
+        context 'to latest + 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(20140512) }
+        end
+      end
+    end
   end
 
-  context 'timestamp filenames' do
-    let(:dir) { File.join(migrations_dir, 'timestamp') }
+  describe '#down' do
+    subject { instance.down(to) }
 
-    it 'should at start has 0 version number' do
-      expect(navigator.version).to eq(0)
+    context 'when integer migrations' do
+      let(:dir) { File.join(migrations_dir, 'integer') }
+
+      context 'from latest' do
+        let(:current_version) { 4 }
+
+        context 'to scratch' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(0) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(3) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(2) }
+        end
+
+        context 'to scratch - 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(0) }
+        end
+      end
+
+      context 'from n position' do
+        let(:current_version) { 3 }
+
+        context 'to scratch' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(0) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(2) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(1) }
+        end
+
+        context 'to scratch - 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(0) }
+        end
+      end
     end
 
-    it 'should support version set' do
-      navigator.set(20140326)
-      expect(navigator.version).to eq(20140326)
-    end
+    context 'when timestamped migrations' do
+      let(:dir) { File.join(migrations_dir, 'timestamp') }
 
-    it 'should show next version' do
-      navigator.up
-      expect(navigator.version).to eq(20140326)
-    end
+      context 'from latest' do
+        let(:current_version) { 20140512 }
 
-    it 'should show previous version' do
-      navigator.up
-      navigator.up
-      navigator.down
-      expect(navigator.version).to eq(20140326)
-    end
+        context 'to scratch' do
+          let(:to) { nil }
 
-    it "shouldn't switch higher than last version" do
-      5.times{ navigator.up }
-      expect(navigator.version).to eq(20140405)
-    end
+          it { expect(subject).to eql(0) }
+        end
 
-    it "shouldn't switch lower than init version" do
-      5.times{ navigator.down }
-      expect(navigator.version).to eq(0)
-    end
+        context '1 step' do
+          let(:to) { 1 }
 
-    it 'should set to last version' do
-      navigator.last
-      expect(navigator.version).to eq(20140405)
-    end
+          it { expect(subject).to eql(20140510) }
+        end
 
-    it 'should switch higher by steps' do
-      navigator.up 2
-      expect(navigator.version).to eq(20140405)
-    end
+        context 'n steps' do
+          let(:to) { 2 }
 
-    it 'should switch lower by steps' do
-      navigator.up 0
-      expect(navigator.version).to eq(0)
+          it { expect(subject).to eql(20140405) }
+        end
+
+        context 'to scratch - 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(0) }
+        end
+      end
+
+      context 'from n position' do
+        let(:current_version) { 20140510 }
+
+        context 'to scratch' do
+          let(:to) { nil }
+
+          it { expect(subject).to eql(0) }
+        end
+
+        context '1 step' do
+          let(:to) { 1 }
+
+          it { expect(subject).to eql(20140405) }
+        end
+
+        context 'n steps' do
+          let(:to) { 2 }
+
+          it { expect(subject).to eql(20140326) }
+        end
+
+        context 'to scratch - 1' do
+          let(:to) { 4 }
+
+          it { expect(subject).to eql(0) }
+        end
+      end
     end
   end
 
