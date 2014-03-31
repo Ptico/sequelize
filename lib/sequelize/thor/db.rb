@@ -16,8 +16,6 @@ class Db < Thor
     Sequelize::Command.new.drop
   end
 
-  desc 'dump FILE', 'Dump database to FILE'
-
   class Migrate < Thor
     desc 'up [STEPS]', 'Perform migration up (default: to latest version)'
     def up(steps=nil)
