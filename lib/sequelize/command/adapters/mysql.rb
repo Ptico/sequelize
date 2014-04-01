@@ -49,11 +49,12 @@ module Sequelize
       def console
         run_and_quit('mysql') do
           add_connection_settings
-          flag optiosn.database
+
+          flag options.database
         end
       end
 
-      private
+    private
 
       def add_connection_settings
         option '--user',     options.username
