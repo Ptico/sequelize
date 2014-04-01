@@ -156,4 +156,64 @@ shared_examples_for 'connection options' do
     end
   end
 
+  describe '#servers' do
+    subject { instance.servers }
+
+    context 'when specified' do
+      let(:options) { { servers: { master: 'config' } } }
+
+      it { expect(subject).to eql({ master: 'config' }) }
+    end
+  end
+
+  describe '#single_threaded' do
+    subject { instance.single_threaded }
+
+    context 'when specified' do
+      let(:options) { { single_threaded: true } }
+
+      it { expect(subject).to eql(true) }
+    end
+  end
+
+  describe '#test' do
+    subject { instance.test }
+
+    context 'when specified' do
+      let(:options) { { test: true } }
+
+      it { expect(subject).to eql(true) }
+    end
+  end
+
+  describe '#max_connections' do
+    subject { instance.max_connections }
+
+    context 'when specified' do
+      let(:options) { { max_connections: 8 } }
+
+      it { expect(subject).to eql(8) }
+    end
+  end
+
+  describe '#pool_sleep_time' do
+    subject { instance.pool_sleep_time }
+
+    context 'when specified' do
+      let(:options) { { pool_sleep_time: 1 } }
+
+      it { expect(subject).to eql(1) }
+    end
+  end
+
+  describe '#pool_timeout' do
+    subject { instance.pool_timeout }
+
+    context 'when specified' do
+      let(:options) { { pool_timeout: 5 } }
+
+      it { expect(subject).to eql(5) }
+    end
+  end
+
 end

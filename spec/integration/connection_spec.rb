@@ -16,6 +16,7 @@ describe 'connection' do
         FileUtils.mkdir(File.join(File.dirname(__FILE__),'../tmp'))
 
         Sequelize.configure(:development) do
+          logger ['sdfds','sdfsdf']
           connection do
             root     "#{File.dirname(__FILE__)}/../tmp"
             adapter  'sqlite'
@@ -60,7 +61,7 @@ describe 'connection' do
             subject.create
 
             expect(subject).to receive(:`).with(
-              "sqlite3 #{db_path} .schema > #{dump_file}"
+              "sqlite3 #{db_path} .schema \\>\\ #{dump_file}"
             )
 
             subject.dump_schema dump_file
@@ -74,7 +75,7 @@ describe 'connection' do
             subject.create
 
             expect(subject).to receive(:`).with(
-              "sqlite3 #{db_path} .dump > #{dump_file}"
+              "sqlite3 #{db_path} .dump \\>\\ #{dump_file}"
             )
 
             subject.dump dump_file
@@ -90,7 +91,7 @@ describe 'connection' do
           subject.create
 
           expect(subject).to receive(:`).with(
-            "sqlite3 #{db_path} < #{dump_file}"
+            "sqlite3 #{db_path} \\<\\ #{dump_file}"
           )
 
           subject.load dump_file
@@ -164,7 +165,7 @@ describe 'connection' do
     describe '#create' do
       it 'should exec createdb' do
         expect(subject).to receive(:`).with(
-         "createdb --username=#{config.username} --host=#{config.host} --port=#{config.port} --maintenance-db=#{config.maintenance_db} --encoding=#{config.encoding} --locale=#{config.locale} --lc-collate=#{config.collation} --lc-ctype=#{config.ctype} --template=#{config.template} --tablespace=#{config.tablespace} --owner=#{config.owner} #{config.database}"
+         "createdb --username\\=#{config.username} --host\\=#{config.host} --port\\=#{config.port} --maintenance-db\\=#{config.maintenance_db} --encoding\\=#{config.encoding} --locale\\=#{config.locale} --lc-collate\\=#{config.collation} --lc-ctype\\=#{config.ctype} --template\\=#{config.template} --tablespace\\=#{config.tablespace} --owner\\=#{config.owner} #{config.database}"
         )
         subject.create
       end
@@ -173,7 +174,7 @@ describe 'connection' do
     describe '#drop' do
       it 'should exec dropdb' do
         expect(subject).to receive(:`).with(
-          "dropdb --username=#{config.username} --host=#{config.host} --port=#{config.port} #{config.database}"
+          "dropdb --username\\=#{config.username} --host\\=#{config.host} --port\\=#{config.port} #{config.database}"
         )
         subject.drop
       end
@@ -185,7 +186,7 @@ describe 'connection' do
       context 'schema' do
         it 'should exec pg_dump' do
           expect(subject).to receive(:`).with(
-            "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --schema-only --no-privileges --no-owner --file=#{dump_file} #{config.database}"
+            "pg_dump --username\\=#{config.username} --host\\=#{config.host} --port\\=#{config.port} --schema-only --no-privileges --no-owner --file\\=#{dump_file} #{config.database}"
           )
           subject.dump_schema dump_file
         end
@@ -194,7 +195,7 @@ describe 'connection' do
       context 'full' do
         it 'should exec pg_dump' do
           expect(subject).to receive(:`).with(
-            "pg_dump --username=#{config.username} --host=#{config.host} --port=#{config.port} --no-privileges --no-owner --file=#{dump_file} #{config.database}"
+            "pg_dump --username\\=#{config.username} --host\\=#{config.host} --port\\=#{config.port} --no-privileges --no-owner --file\\=#{dump_file} #{config.database}"
           )
           subject.dump dump_file
         end
@@ -206,7 +207,7 @@ describe 'connection' do
 
       it 'should exec psql' do
         expect(subject).to receive(:`).with(
-          "psql --username=#{config.username} --host=#{config.host} --port=#{config.port} --file=#{dump_file} #{config.database}"
+          "psql --username\\=#{config.username} --host\\=#{config.host} --port\\=#{config.port} --file\\=#{dump_file} #{config.database}"
         )
         subject.load dump_file
       end
@@ -245,7 +246,7 @@ describe 'connection' do
     describe '#create' do
       it 'should exec mysql' do
         expect(subject).to receive(:`).with(
-          "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --execute=CREATE DATABASE IF NOT EXISTS #{config.database} DEFAULT CHARACTER SET #{config.charset} DEFAULT COLLATE #{config.collation}"
+          "mysql --user\\=#{config.username} --password\\=#{config.password} --host\\=#{config.host} --port\\=#{config.port} --execute\\=CREATE\\ DATABASE\\ IF\\ NOT\\ EXISTS\\ #{config.database}\\ DEFAULT\\ CHARACTER\\ SET\\ #{config.charset}\\ DEFAULT\\ COLLATE\\ #{config.collation}"
         )
 
         subject.create
@@ -255,7 +256,7 @@ describe 'connection' do
     describe '#drop' do
       it 'should exec mysql' do
         expect(subject).to receive(:`).with(
-          "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --execute=DROP DATABASE IF EXISTS #{config.database}"
+          "mysql --user\\=#{config.username} --password\\=#{config.password} --host\\=#{config.host} --port\\=#{config.port} --execute\\=DROP\\ DATABASE\\ IF\\ EXISTS\\ #{config.database}"
         )
 
         subject.drop
@@ -268,7 +269,7 @@ describe 'connection' do
       context 'schema' do
         it 'should exec mysqldump' do
           expect(subject).to receive(:`).with(
-            "mysqldump --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --no-data --result-file=#{dump_file} #{config.database}"
+            "mysqldump --user\\=#{config.username} --password\\=#{config.password} --host\\=#{config.host} --port\\=#{config.port} --no-data --result-file\\=#{dump_file} #{config.database}"
           )
 
           subject.dump_schema dump_file
@@ -278,7 +279,7 @@ describe 'connection' do
       context 'full' do
         it 'should exec mysqldump' do
           expect(subject).to receive(:`).with(
-            "mysqldump --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --result-file=#{dump_file} #{config.database}"
+            "mysqldump --user\\=#{config.username} --password\\=#{config.password} --host\\=#{config.host} --port\\=#{config.port} --result-file\\=#{dump_file} #{config.database}"
           )
 
           subject.dump dump_file
@@ -291,7 +292,7 @@ describe 'connection' do
 
       it 'should exec mysql' do
           expect(subject).to receive(:`).with(
-            "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --database=#{config.database} --execute=SET FOREIGN_KEY_CHECKS = 0; SOURCE #{dump_file}; SET FOREIGN_KEY_CHECKS = 1"
+            "mysql --user\\=#{config.username} --password\\=#{config.password} --host\\=#{config.host} --port\\=#{config.port} --database\\=#{config.database} --execute\\=SET\\ FOREIGN_KEY_CHECKS\\ \\=\\ 0\\;\\ SOURCE\\ #{dump_file}\\;\\ SET\\ FOREIGN_KEY_CHECKS\\ \\=\\ 1"
           )
 
           subject.load dump_file
