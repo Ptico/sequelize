@@ -1,3 +1,5 @@
+require 'shellwords'
+
 module Sequelize
   class Command
     class Base
@@ -15,7 +17,7 @@ module Sequelize
 
         yield
 
-        @command.join(' ')
+        Shellwords.join(@command)
       end
 
       def run(command, &block)
