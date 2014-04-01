@@ -22,7 +22,11 @@ class Db < DbBase
 
   desc 'drop', 'Drop database'
   def drop
+    env = options[:environment] || ENV['DB_ENV'] || 'development'
+
     if yes?('Are you sure? This will erase ALL your data', :red)
+      exit(1) if env == 'production' && yes?('This is PRODUCTION database! Do you want me to stop this madness?', :red)
+
       Sequelize::Command.new.drop
     end
   end
