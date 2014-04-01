@@ -16,7 +16,6 @@ describe 'connection' do
         FileUtils.mkdir(File.join(File.dirname(__FILE__),'../tmp'))
 
         Sequelize.configure(:development) do
-          logger ['sdfds','sdfsdf']
           connection do
             root     "#{File.dirname(__FILE__)}/../tmp"
             adapter  'sqlite'
