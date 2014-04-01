@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'bundler'
+
+Bundler.setup
+
+require File.expand_path(File.join('<%= @app_root_back %>', '<%= @db_initializer %>'), File.dirname(__FILE__))
+require 'sequelize/command'
+
+cmd = Sequelize::Command.new
+
+if cmd.respond_to?(:console)
+  cmd.console
+else
+  puts "This functionality unavailable for #{Sequelize.connection_options.adapter_name}. Sorry :("
+  exit 1
+end

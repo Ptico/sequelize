@@ -1,0 +1,6 @@
+# DB tasks
+require 'sequelize/thor/db'
+require File.join(File.dirname(__FILE__), '<%= @db_initializer %>')
+
+# Generators
+require 'sequelize/thor/generate'

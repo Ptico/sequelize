@@ -38,7 +38,13 @@ module Sequelize
         end
       end
 
-      private
+      def console
+        run_and_quit('sqlite3') do
+          flag db_path
+        end
+      end
+
+    private
 
       def in_memory?
         options.database == ':memory:'

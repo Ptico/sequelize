@@ -22,6 +22,10 @@ module Sequelize
         execute(build(command, &block))
       end
 
+      def run_and_quit(command, &block)
+        Kernel.exec(build(command, &block))
+      end
+
       def option(key, value)
         if value
           separator = key[0, 2] == '--' ? '=' : ' '

@@ -1,0 +1,37 @@
+require 'sequelize'
+
+##
+# Main db configuration
+#
+# Here is available options:
+#
+# config_file    - path to database configuration file (optional, default: 'config/database.yml')
+# migrations_dir - path to directory containing migration files (optional, default: 'migrations')
+# root           - base folder for another paths like `config_file` (optional)
+# logger         - Logger instance
+# connection     - block containing database configuration
+#
+# Example:
+#
+#     Sequelize.configure do # This settings will be used anyway
+#       root MyApp.root
+#     end
+#
+#     Sequelize.configure(:development) do
+#       connection do
+#         adapter 'sqlite'
+#         database 'db/development.sqlite3'
+#       end
+#     end
+#
+#     Sequelize.configure(:production) do
+#       config_file 'config/production_db.yml'
+#     end
+#
+Sequelize.configure do
+  root            File.expand_path('<%= @app_root_back %>', File.dirname(__FILE__))
+  config_file    '<%= @db_config %>'
+  migrations_dir '<%= @migrations_dir %>'
+end
+
+Sequelize.setup(ENV['DB_ENV'] || 'development')

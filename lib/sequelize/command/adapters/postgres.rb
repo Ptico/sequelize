@@ -54,6 +54,13 @@ module Sequelize
         end
       end
 
+      def console
+        run_and_quit('psql') do
+          add_connection_settings
+          flag options.database
+        end
+      end
+
     private
 
       def execute(command)

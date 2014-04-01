@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Sequelize::VERSION
   spec.authors       = ["Andrey Savchenko"]
   spec.email         = ["andrey@aejis.eu"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Add missing Sequel parts to your application}
+  spec.description   = %q{Add missing Sequel parts to your application}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency('sequel')
+  spec.add_dependency('thor')
   spec.add_dependency('adamantium')
   spec.add_dependency('sequoia', '~> 0.2.0')
 
