@@ -3,15 +3,17 @@ require 'sequelize/command'
 require 'sequelize/migrator'
 require 'thor'
 
-class Db < Thor
-  include Thor::Actions
-
+class DbBase < Thor
   class_option :environment, type: :string, aliases: '-e', default: nil
 
   def initialize(*)
     super
     Sequelize.setup(options[:environment]) if options[:environment]
   end
+end
+
+class Db < DbBase
+  include Thor::Actions
 
   desc 'create', 'Create database'
   def create
@@ -25,11 +27,7 @@ class Db < Thor
     end
   end
 
-  class Migrate < Thor
-    def initialize(*)
-      super
-      Sequelize.setup(options[:environment]) if options[:environment]
-    end
+  class Migrate < DbBase
 
     desc 'up [STEPS]', 'Perform migration up (default: to latest version)'
     def up(steps=nil)
@@ -53,7 +51,7 @@ class Db < Thor
     end
   end
 
-  class Schema < Thor
+  class Schema < DbBase
     desc 'version', 'Print current schema version'
     def version
       puts Sequelize::Migrator.new.current_version
