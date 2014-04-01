@@ -28,7 +28,7 @@ module Sequelize
     end
 
   private
-    ADDITIONAL_OPTIONS_KEYS = [:logger, :after_connect]
+    ADDITIONAL_OPTIONS_KEYS = Set.new([:logger, :after_connect]).freeze
 
     def setup_connection_options(env)
       @connection_options = ConnectionOptions::Reader.new(env, config).connection_options
@@ -39,12 +39,10 @@ module Sequelize
     end
 
     def additional_options
-      opts = {}
       source_config = config.to_hash
-      ADDITIONAL_OPTIONS_KEYS.each do |key|
-        opts[key] = source_config[key]
+      ADDITIONAL_OPTIONS_KEYS.each_with_object({}) do |key, result|
+        result[key] = source_config[key] if source_config.has_key? key
       end
-      opts
     end
 
   end

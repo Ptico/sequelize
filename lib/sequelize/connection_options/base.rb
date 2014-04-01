@@ -95,7 +95,7 @@ module Sequelize
       end
 
       def properties
-        [:adapter, :database, :username, :password, :host, :port, :owner, :charset, :collation]
+        [:adapter, :database, :username, :password, :host, :port, :owner, :charset, :collation, :servers, :single_threaded, :test, :max_connections, :pool_sleep_time, :pool_timeout]
       end
       memoize :properties
     end
