@@ -4,7 +4,14 @@ require 'sequelize/migrator'
 require 'thor'
 
 class Db < Thor
-  class_option :environment, type: :string, aliases: '-e', default: 'development'
+  include Thor::Actions
+
+  class_option :environment, type: :string, aliases: '-e', default: nil
+
+  def initialize(*)
+    super
+    Sequelize.setup(options[:environment]) if options[:environment]
+  end
 
   desc 'create', 'Create database'
   def create
@@ -13,10 +20,17 @@ class Db < Thor
 
   desc 'drop', 'Drop database'
   def drop
-    Sequelize::Command.new.drop
+    if yes?('Are you sure? This will erase ALL your data', :red)
+      Sequelize::Command.new.drop
+    end
   end
 
   class Migrate < Thor
+    def initialize(*)
+      super
+      Sequelize.setup(options[:environment]) if options[:environment]
+    end
+
     desc 'up [STEPS]', 'Perform migration up (default: to latest version)'
     def up(steps=nil)
       migrator.migrate_up(steps)
@@ -70,14 +84,12 @@ class Db < Thor
 
   desc 'nuke', 'Drop all data and reset schema'
   def nuke
-    drop
-    create
+    drop and create
   end
 
   desc 'reset', 'Nuke then migrate database'
   def reset
-    nuke
-    Migrate.new.up
+    nuke and Migrate.new.up
   end
 
 end
