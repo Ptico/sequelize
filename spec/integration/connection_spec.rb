@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'sequelize/command'
 require 'sequelize/command/adapters/postgres'
 require 'sequelize/command/adapters/sqlite'
+require 'sequelize/command/adapters/mysql'
 
 describe 'connection' do
   describe Sequelize::Command::Sqlite do
@@ -213,7 +214,90 @@ describe 'connection' do
 
   end
 
-  describe 'mysql', mysql: true do
+  describe Sequelize::Command::Mysql, mysql: true do
+    let(:config) { Sequelize.config.connection }
+
+    before do
+      Sequelize.configure(:development) do
+        connection do
+          adapter        'mysql'
+          database       'testtest'
+          username       'mysql'
+          password       'ololo'
+          host           'localhost'
+          port           5432
+          charset        'utf-8'
+          collation      'somecollation'
+        end
+      end
+
+      Sequelize.setup(:development)
+    end
+
+    after(:all) do
+      Sequelize.instance_variable_set(:@config, nil)
+      Sequelize.instance_variable_set(:@connection_options, nil)
+      Sequelize.instance_variable_set(:@config_attributes, nil)
+    end
+
+    subject { described_class.new }
+
+    describe '#create' do
+      it 'should exec mysql' do
+        expect(subject).to receive(:`).with(
+          "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --execute=CREATE DATABASE IF NOT EXISTS #{config.database} DEFAULT CHARACTER SET #{config.charset} DEFAULT COLLATE #{config.collation}"
+        )
+
+        subject.create
+      end
+    end
+
+    describe '#drop' do
+      it 'should exec mysql' do
+        expect(subject).to receive(:`).with(
+          "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --execute=DROP DATABASE IF EXISTS #{config.database}"
+        )
+
+        subject.drop
+      end
+    end
+
+    describe '#dump' do
+      let(:dump_file) { 'dump.sql' }
+
+      context 'schema' do
+        it 'should exec mysqldump' do
+          expect(subject).to receive(:`).with(
+            "mysqldump --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --no-data --result-file=#{dump_file} #{config.database}"
+          )
+
+          subject.dump_schema dump_file
+        end
+      end
+
+      context 'full' do
+        it 'should exec mysqldump' do
+          expect(subject).to receive(:`).with(
+            "mysqldump --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --result-file=#{dump_file} #{config.database}"
+          )
+
+          subject.dump dump_file
+        end
+      end
+    end
+
+    describe '#load' do
+      let(:dump_file) { 'dump.sql' }
+
+      it 'should exec mysql' do
+          expect(subject).to receive(:`).with(
+            "mysql --user=#{config.username} --password=#{config.password} --host=#{config.host} --port=#{config.port} --database=#{config.database} --execute=SET FOREIGN_KEY_CHECKS = 0; SOURCE #{dump_file}; SET FOREIGN_KEY_CHECKS = 1"
+          )
+
+          subject.load dump_file
+        end
+    end
+
 
   end
 
