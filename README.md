@@ -18,7 +18,13 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+cd to your application folder and run:
+
+```
+sequelize
+```
+
+then answer to several questions.
 
 ## Contributing
 

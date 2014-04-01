@@ -48,5 +48,19 @@ module Sequelize
       end
     end
 
+    def post_install_message
+      say(<<-EOF, :green)
+
+    Success!
+
+    Now, please, review your '#{@db_initializer}'
+    and '#{@db_config}' settings.
+    Note that '#{@db_config}' was added to .gitignore
+
+    You can review available commands with:
+    `thor list` command.
+      EOF
+    end
+
   end
 end
