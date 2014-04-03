@@ -44,13 +44,11 @@ module Sequelize
       end
 
       def use_change?
-        return false unless @action
-        @view ? false : (!USE_CHANGE_LIST.include? @action)
+        change? ? false : changing_action?
       end
 
       def table_action
-        subject_name = @view ? 'view' : 'table'
-        ((ALTER_ACTIONS.include? @action) || (column_changes && !column_changes.empty?)) ? "alter_#{subject_name}" : "#{@action}_#{subject_name}"
+        alter_table? ? "alter_#{subject_name}" : "#{@action}_#{subject_name}"
       end
 
       def column_action
@@ -58,6 +56,8 @@ module Sequelize
       end
 
       def index_action
+        # HACK:
+        # special cases
         return nil if @action == 'change'
         @action = 'create' if @action == 'add'
         use_change? ? "#{@action}_index" : 'drop_index'
@@ -151,6 +151,44 @@ module Sequelize
       #
       def set_table_renames
         @table_name, @table_rename = @rest, @table_name if @renames.empty?
+      end
+
+      ##
+      # Private: helper for table action
+      # Returns: {String} subject name ('table' or 'view')
+      #
+      def subject_name
+        @view ? 'view' : 'table'
+      end
+
+      ##
+      # Private: helper for alter_table?
+      # Returns: {Bool} true if we change columns in table
+      #
+      def change_columns?
+        column_changes && !column_changes.empty?
+      end
+
+      ##
+      # Private: helper for table_action
+      # Returns: {Bool} true if we alter table structure
+      #
+      def alter_table?
+        (ALTER_ACTIONS.include? @action) || change_columns?
+      end
+
+      ##
+      # Private: helper for use_change?
+      # Returns: {Bool} true if there is not any action for tables
+      def change?
+        !@action || @view
+      end
+
+      ##
+      # Private: hlper for use_change?
+      # Returns: {Bool} true if action should make changes in table
+      def changing_action?
+        !USE_CHANGE_LIST.include? @action
       end
 
     end
