@@ -1,4 +1,5 @@
 require 'sequel/model/inflections'
+require 'pry'
 
 module Sequelize
   class Migrator
@@ -6,10 +7,12 @@ module Sequelize
       include Sequel::Inflections
 
       ACTION_REGEXP     = /^(create|add|drop|remove|rename|change)_(.*)/.freeze
-      TABLE_DIV_REGEXP  = /_(to|from|in)_/.freeze
+      TABLE_DIV_REGEXP  = /_(to|from|in|of)_/.freeze
       COLUMN_DIV_REGEXP = /_and_/.freeze
       VIEW_REGEXP       = /(.*)_view$/.freeze
       INDEX_REGEXP      = /(.*)_index$/.freeze
+      USE_CHANGE_LIST   = Set.new(['drop', 'remove', 'change']).freeze
+      ALTER_ACTIONS     = Set.new(['add', 'remove', 'change']).freeze
 
       ##
       # Returns: {String} table name
@@ -22,11 +25,6 @@ module Sequelize
       attr_reader :table_rename
 
       ##
-      # Returns: {Set} column names list
-      #
-      attr_reader :columns
-
-      ##
       # Returns: {Hash} hash of column renames
       #
       attr_reader :column_changes
@@ -34,22 +32,35 @@ module Sequelize
       ##
       # Returns: {Set} index names list
       #
-      attr_reader :indexes
+      def indexes
+        @indexes.map(&:to_sym).to_set
+      end
+
+      ##
+      # Returns: {Set} column names list
+      #
+      def columns
+        @columns.map(&:to_sym).to_set
+      end
 
       def use_change?
-
+        return false unless @action
+        @view ? false : (!USE_CHANGE_LIST.include? @action)
       end
 
       def table_action
-
+        subject_name = @view ? 'view' : 'table'
+        ((ALTER_ACTIONS.include? @action) || (column_changes && !column_changes.empty?)) ? "alter_#{subject_name}" : "#{@action}_#{subject_name}"
       end
 
       def column_action
-
+        use_change? ? "#{@action}_column" : 'drop_column'
       end
 
       def index_action
-
+        return nil if @action == 'change'
+        @action = 'create' if @action == 'add'
+        use_change? ? "#{@action}_index" : 'drop_index'
       end
 
     private
@@ -57,6 +68,7 @@ module Sequelize
       def initialize(name)
         @rest = underscore(name)
         @name = @rest.freeze
+        @view = false
         @renames = {}
         tokenize
       end
@@ -76,9 +88,10 @@ module Sequelize
       #
       def get_action
         match = ACTION_REGEXP.match(@name)
-
-        @rest   = match[2]
-        @action = match[1]
+        if match
+          @rest   = match[2]
+          @action = match[1]
+        end
       end
 
       ##
@@ -87,7 +100,6 @@ module Sequelize
       #
       def get_table
         parts = @rest.split(TABLE_DIV_REGEXP)
-
         @table_name = parts.pop
 
         if match = VIEW_REGEXP.match(table_name)
@@ -104,7 +116,6 @@ module Sequelize
       #
       def get_columns
         columns = @rest.split(COLUMN_DIV_REGEXP)
-
         @columns = Set.new
         @indexes = Set.new
 
@@ -122,12 +133,15 @@ module Sequelize
       # and values is new column name
       #
       def set_column_renames
+
         @renames = @columns.each_with_object({}) do |column, renames|
           if column.include?('_to_')
             cols = column.split('_to_')
             renames[cols.first] = cols.last
           end
         end
+
+        @column_changes = @renames
 
         @columns = @renames.keys.to_set
       end
