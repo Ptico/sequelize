@@ -42,14 +42,23 @@ module Sequelize
         @columns.map(&:to_sym).to_set
       end
 
+      ##
+      # Returns: {Bool} true if operation can be rolled back
+      #
       def use_change?
         !change? && changing_action?
       end
 
+      ##
+      # Returns: {String} main action on table
+      #
       def table_action
         alter_table? ? "alter_#{subject_name}" : "#{@action}_#{subject_name}"
       end
 
+      ##
+      # Returns: {Set} column names list
+      #
       def column_action
         use_change? ? "#{@action}_column" : 'drop_column'
       end
