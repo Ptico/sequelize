@@ -130,6 +130,28 @@ describe Sequelize::Migrator::Naming do
     let(:name) { 'do_something_unusual' }
 
     it { expect(subject.use_change?).to be(false) }
+
+    context 'Add many' do
+      let(:name) { 'add_company_id_index_and_company_name_to_user_profiles' }
+
+      it { expect(subject.use_change?).to  be(true) }
+      it { expect(subject.table_name).to   eql('user_profiles') }
+      it { expect(subject.table_action).to eql('alter_table') }
+      it { expect(subject.index_action).to eql('create_index') }
+      it { expect(subject.indexes).to      contain_exactly(:company_id) }
+      it { expect(subject.columns).to      contain_exactly(:company_name) }
+
+    end
+
+    context 'Rename many' do
+      let(:name) { 'rename_full_name_to_name_and_mail_to_email_of_user_profiles' }
+
+      it { expect(subject.use_change?).to    be(true) }
+      it { expect(subject.table_name).to     eql('user_profiles') }
+      it { expect(subject.table_action).to   eql('alter_table') }
+      it { expect(subject.column_changes).to match({ 'full_name' => 'name', 'mail' => 'email' }) }
+      it { expect(subject.column_action).to  eql('rename_column') }
+    end
   end
 
 end

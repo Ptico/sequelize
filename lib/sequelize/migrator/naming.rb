@@ -1,5 +1,4 @@
 require 'sequel/model/inflections'
-require 'pry'
 
 module Sequelize
   class Migrator
@@ -44,7 +43,7 @@ module Sequelize
       end
 
       def use_change?
-        change? ? false : changing_action?
+        !change? && changing_action?
       end
 
       def table_action
@@ -77,6 +76,7 @@ module Sequelize
         get_action
         get_table
         get_columns
+
         if @action == 'rename'
           set_column_renames
           set_table_renames
@@ -87,8 +87,7 @@ module Sequelize
       # Private: Extract action name from name
       #
       def get_action
-        match = ACTION_REGEXP.match(@name)
-        if match
+        if match = ACTION_REGEXP.match(@name)
           @rest   = match[2]
           @action = match[1]
         end
@@ -116,6 +115,7 @@ module Sequelize
       #
       def get_columns
         columns = @rest.split(COLUMN_DIV_REGEXP)
+
         @columns = Set.new
         @indexes = Set.new
 
@@ -133,7 +133,6 @@ module Sequelize
       # and values is new column name
       #
       def set_column_renames
-
         @renames = @columns.each_with_object({}) do |column, renames|
           if column.include?('_to_')
             cols = column.split('_to_')
@@ -188,7 +187,7 @@ module Sequelize
       # Private: hlper for use_change?
       # Returns: {Bool} true if action should make changes in table
       def changing_action?
-        !USE_CHANGE_LIST.include? @action
+        !USE_CHANGE_LIST.include?(@action)
       end
 
     end
