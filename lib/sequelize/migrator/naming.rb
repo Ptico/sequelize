@@ -6,10 +6,12 @@ module Sequelize
       include Sequel::Inflections
 
       ACTION_REGEXP     = /^(create|add|drop|remove|rename|change)_(.*)/.freeze
-      TABLE_DIV_REGEXP  = /_(to|from|in)_/.freeze
+      TABLE_DIV_REGEXP  = /_(to|from|in|of)_/.freeze
       COLUMN_DIV_REGEXP = /_and_/.freeze
       VIEW_REGEXP       = /(.*)_view$/.freeze
       INDEX_REGEXP      = /(.*)_index$/.freeze
+      USE_CHANGE_LIST   = Set.new(['drop', 'remove', 'change']).freeze
+      ALTER_ACTIONS     = Set.new(['add', 'remove', 'change']).freeze
 
       ##
       # Returns: {String} table name
@@ -22,11 +24,6 @@ module Sequelize
       attr_reader :table_rename
 
       ##
-      # Returns: {Set} column names list
-      #
-      attr_reader :columns
-
-      ##
       # Returns: {Hash} hash of column renames
       #
       attr_reader :column_changes
@@ -34,22 +31,44 @@ module Sequelize
       ##
       # Returns: {Set} index names list
       #
-      attr_reader :indexes
+      def indexes
+        @indexes.map(&:to_sym).to_set
+      end
 
+      ##
+      # Returns: {Set} column names list
+      #
+      def columns
+        @columns.map(&:to_sym).to_set
+      end
+
+      ##
+      # Returns: {Bool} true if operation can be rolled back
+      #
       def use_change?
-
+        !change? && changing_action?
       end
 
+      ##
+      # Returns: {String} main action on table
+      #
       def table_action
-
+        alter_table? ? "alter_#{subject_name}" : "#{@action}_#{subject_name}"
       end
 
+      ##
+      # Returns: {Set} column names list
+      #
       def column_action
-
+        use_change? ? "#{@action}_column" : 'drop_column'
       end
 
       def index_action
-
+        # HACK:
+        # special cases
+        return nil if @action == 'change'
+        @action = 'create' if @action == 'add'
+        use_change? ? "#{@action}_index" : 'drop_index'
       end
 
     private
@@ -57,6 +76,7 @@ module Sequelize
       def initialize(name)
         @rest = underscore(name)
         @name = @rest.freeze
+        @view = false
         @renames = {}
         tokenize
       end
@@ -65,6 +85,7 @@ module Sequelize
         get_action
         get_table
         get_columns
+
         if @action == 'rename'
           set_column_renames
           set_table_renames
@@ -75,10 +96,10 @@ module Sequelize
       # Private: Extract action name from name
       #
       def get_action
-        match = ACTION_REGEXP.match(@name)
-
-        @rest   = match[2]
-        @action = match[1]
+        if match = ACTION_REGEXP.match(@name)
+          @rest   = match[2]
+          @action = match[1]
+        end
       end
 
       ##
@@ -87,7 +108,6 @@ module Sequelize
       #
       def get_table
         parts = @rest.split(TABLE_DIV_REGEXP)
-
         @table_name = parts.pop
 
         if match = VIEW_REGEXP.match(table_name)
@@ -129,6 +149,8 @@ module Sequelize
           end
         end
 
+        @column_changes = @renames
+
         @columns = @renames.keys.to_set
       end
 
@@ -137,6 +159,44 @@ module Sequelize
       #
       def set_table_renames
         @table_name, @table_rename = @rest, @table_name if @renames.empty?
+      end
+
+      ##
+      # Private: helper for table action
+      # Returns: {String} subject name ('table' or 'view')
+      #
+      def subject_name
+        @view ? 'view' : 'table'
+      end
+
+      ##
+      # Private: helper for alter_table?
+      # Returns: {Bool} true if we change columns in table
+      #
+      def change_columns?
+        column_changes && !column_changes.empty?
+      end
+
+      ##
+      # Private: helper for table_action
+      # Returns: {Bool} true if we alter table structure
+      #
+      def alter_table?
+        (ALTER_ACTIONS.include? @action) || change_columns?
+      end
+
+      ##
+      # Private: helper for use_change?
+      # Returns: {Bool} true if there is not any action for tables
+      def change?
+        !@action || @view
+      end
+
+      ##
+      # Private: hlper for use_change?
+      # Returns: {Bool} true if action should make changes in table
+      def changing_action?
+        !USE_CHANGE_LIST.include?(@action)
       end
 
     end
