@@ -12,10 +12,10 @@ describe Sequelize::Migrator::MigrationAttributes do
 
       context 'with indexes' do
         let(:name) { 'add_company_id_index_and_company_name_to_user_profiles' }
-        let(:args) { nil }
+        let(:args) { [] }
  
-        it { expect(attributes).to eql([{ name: :company_name, type: nil, options: nil }]) }
-        it { expect(indexes).to eql([{ name: :company_id, options:  nil }]) }
+        it { expect(attributes).to match_array([{ name: :company_name, type: nil, options: {} }]) }
+        it { expect(indexes).to match_array([{ name: :company_id, options:  nil }]) }
       end
 
       context 'with types' do
@@ -24,21 +24,21 @@ describe Sequelize::Migrator::MigrationAttributes do
         context 'without options' do
           let(:args) { ['string', 'integer'] }
 
-          it { expect(attributes).to eql([{ name: :email, type: 'String', options: nil }, { name: :age, type: 'Fixnum', options: nil }])}
+          it { expect(attributes).to match_array([{ name: :email, type: 'String', options: {} }, { name: :age, type: 'Fixnum', options: {} }])}
         end
 
         context 'with options' do
           let(:args) { ['string(10)', 'integer'] }
 
-          it { expect(attributes).to eql([{ name: :email, type: 'String', options: { size: 10 } }, { name: :age, type: 'Fixnum', options: nil }]) }
+          it { expect(attributes).to match_array([{ name: :email, type: 'String', options: { size: 10 } }, { name: :age, type: 'Fixnum', options: {} }]) }
         end
       end
 
       context 'without types' do
         let(:name) { 'add_email_and_age_to_user_profiles' }
-        let(:args) { nil }
+        let(:args) { [] }
 
-        it { expect(attributes).to eql([{ name: :email, type: nil, options: nil}, { name: :age, type: nil, options: nil}])}
+        it { expect(attributes).to match_array([{ name: :email, type: nil, options: {}}, { name: :age, type: nil, options: {}}])}
       end
 
       context 'with additional attributes from task' do
@@ -46,14 +46,14 @@ describe Sequelize::Migrator::MigrationAttributes do
         let(:args) { ['integer'] }
 
         it 'should add attribute to the list of attributes' do
-          instance.add_attribute(:email, 'string(10)')
+          instance.add_attribute(:email, 'String', { size: 10 })
 
-          expect(attributes).to eql([{ name: :email, type: 'String', options: { size: 10 } }, { name: :age, type: 'Fixnum', options: nil }])
+          expect(attributes).to match_array([{ name: :age, type: 'Fixnum', options: {} }, { name: :email, type: 'String', options: { size: 10 } }])
         end
 
         it 'should add index to the list of indexes' do
           instance.add_index(:user_id)
-          expect(indexes).to eql([{ name: :user_id, options: nil }])
+          expect(indexes).to match_array([{ name: :user_id, options: {} }])
         end
       end
     end
@@ -64,29 +64,29 @@ describe Sequelize::Migrator::MigrationAttributes do
       context 'with indexes' do
         let(:args) { ['name:text', 'age:integer:index'] }
 
-        it { expect(attributes).to eql([{ name: :name, type: 'String', options: nil }, {name: :age, type: 'Fixnum', options: nil }]) }
-        it { expect(indexes).to eql([{ name: :age, options:  nil }]) }
+        it { expect(attributes).to match_array([{ name: :name, type: 'String', options: {} }, {name: :age, type: 'Fixnum', options: {} }]) }
+        it { expect(indexes).to match_array([{ name: :age, options:  {} }]) }
       end
 
       context 'with types' do
         let(:args) { ['name:text', 'age:integer'] }
 
-        it { expect(attributes).to eql([{ name: :name, type: 'String', options: nil }, {name: :age, type: 'Fixnum', options: nil }]) }
+        it { expect(attributes).to match_array([{ name: :name, type: 'String', options: {} }, {name: :age, type: 'Fixnum', options: {} }]) }
       end
 
       context 'without types' do
         let(:args) { ['name', 'age'] }
 
-        it { expect(attributes).to eql([{ name: :name, type: nil, options: nil }, {name: :age, type: nil, options: nil }]) }
+        it { expect(attributes).to match_array([{ name: :name, type: nil, options: {} }, {name: :age, type: nil, options: {} }]) }
       end
 
       context 'with additional attributes from task' do
         let(:args) { ['name:text', 'age:integer'] }
 
         it 'should add additional attributes' do
-          instance.add_arrtibute(:email, 'string(10)')
+          instance.add_attribute(:email, 'String', { size: 10 })
 
-          expect(attributes).to eql([{ name: :email, type: 'String', options: { size: 10 } }, { name: :age, type: 'Fixnum', options: nil }, { name: :name, type: 'String', options: nil }])
+          expect(attributes).to match_array([{ name: :email, type: 'String', options: { size: 10 } }, { name: :age, type: 'Fixnum', options: {} }, { name: :name, type: 'String', options: {} }])
         end
       end
     end
@@ -186,48 +186,55 @@ describe Sequelize::Migrator::MigrationAttributes do
   end
 
   describe '.extract_options' do
-    let(:options) { described_class.extract_options(type) }
+      context 'type options without name' do
+        let(:options) { attributes.first[:options] }
+        let(:name) { 'add_something_to_user_profiles' }
 
-    context 'type options' do
-      context 'when sized varchar given' do
-        let(:type) { 'varchar(50)'}
-        it { expect(options).to eql({ size: 50 }) }
-      end
-
-      context 'when char given' do
-        let(:type) { 'char(255)' }
-        it { expect(options).to eql({ fixed: true }) }
-      end
-
-      context 'when sized char given' do
-        let(:type) { 'char(50)' }
-        it { expect(options).to eql({ fixed: true, size: 50 }) }
-      end
-
-      context 'when sized numeric given' do
-        let(:type) { 'numeric(40)' }
-        it { expect(options).to eql({ size: 40 }) }
-      end
-
-      context 'when time given' do
-        let(:type) { 'time' }
-        it { expect(options).to eql({ only_time: true }) }
-      end
-    end
-
-    context 'other options' do
-      context 'attributes from args' do
-        let(:name) { 'create_table_users' }
-        let(:args) { [ 'age:integer:index', 'name:char(50):fixed' ] }
-
-        it 'should has age index' do
-          expect(indexes).to eql([{ name: :age, options: nil }])
+        context 'when sized string given' do
+          let(:args) { ['string(50)']}
+          it { expect(options).to eql({ size: 50 }) }
         end
 
-        it 'should has attributes with right properties' do
-          expect(attributes).to eql([{ name: :age, type: 'Integer', options: nil }, { name: :name, type: 'String', options: { size: 50, fixed: true } }])
+        context 'when fixed string given' do
+          let(:args) { ['string(40):fixed'] }
+          it { expect(options).to eql({ fixed: true, size: 40 }) }
+        end
+
+        context 'when char given' do
+          let(:args) { ['char(255)'] }
+          it { expect(options).to eql({ fixed: true }) }
+        end
+
+        context 'when sized char given' do
+          let(:args) { ['char(50)'] }
+          it { expect(options).to eql({ fixed: true, size: 50 }) }
+        end
+
+        context 'when sized numeric given' do
+          let(:args) { ['numeric(40)'] }
+          it { expect(options).to eql({ size: 40 }) }
+        end
+
+        context 'when time given' do
+          let(:args) { ['time'] }
+          it { expect(options).to eql({ only_time: true }) }
         end
       end
-    end
+
+      context 'with name' do
+        context 'attributes from args' do
+          let(:name) { 'create_users' }
+          let(:args) { [ 'age:integer:index', 'name:char(50):fixed' ] }
+
+          it 'should has age index' do
+            expect(indexes).to match_array([{ name: :age, options: {} }])
+          end
+
+          it 'should has attributes with right properties' do
+            expect(attributes).to match_array([{ name: :age, type: 'Fixnum', options: {} }, { name: :name, type: 'String', options: { size: 50, fixed: true } }])
+          end
+        end
+      end
+
   end
 end
