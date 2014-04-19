@@ -20,8 +20,6 @@ module Sequelize
                 'bool'      => 'TrueClass',
                 'boolean'   => 'TrueClass',
                 'blob'      => 'File' }
-
-      MaximumLength = 255
  
       attr_reader :attributes, :indexes
 
@@ -40,14 +38,18 @@ module Sequelize
 
       def extract_options(options_array, name=nil)
         options = {}
+
         unless options_array.empty?
           if length = attribute_length(options_array.first)
             options[:size] = length
           end
+
           add_index(name) if options_array.include?('index')
+
           options[:fixed] = true if (options_array.include?('fixed') || options_array.first.include?('char'))
           options[:only_time] = true if options_array.first.include?('time')
         end
+
         options
       end
 
@@ -74,7 +76,6 @@ module Sequelize
 
       def parse_attribute(attribute, name=nil)
 
-        type = nil
         options = {}
 
         if attribute
@@ -100,9 +101,8 @@ module Sequelize
       def attribute_length(attribute_name)
         if attribute_name
           length = attribute_name.scan(/[0-9]+/).first.to_i
-          if length > 0 && length < 255
-            length
-          end
+
+          length if length.between?(1, 254)
         end
       end
 
