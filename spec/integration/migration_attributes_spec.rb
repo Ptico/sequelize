@@ -2,10 +2,11 @@ require 'sequelize/migrator'
 require 'sequelize/migrator/migration_attributes'
 
 describe Sequelize::Migrator::MigrationAttributes do
-  let(:instance) { described_class.new(params) }
-  let(:params) { { name: name, args: args } }
+  let(:instance) { described_class.new(args, naming) }
+  let(:naming) { Sequelize::Migrator::Naming.new(name) }
   let(:attributes) { instance.attributes.map { |x| x.to_h } }
-  let(:indexes) { instance.indexes.map { |x| x.to_h } }
+  let(:indexes) { instance.indexes }
+  let(:foreign_keys) { instance.foreign_keys.map{ |x| x.to_h } }
 
   describe '#attributes' do 
     context 'when attributes from naming' do
@@ -15,7 +16,16 @@ describe Sequelize::Migrator::MigrationAttributes do
         let(:args) { [] }
  
         it { expect(attributes).to match_array([{ name: :company_name, type: nil, options: {} }]) }
-        it { expect(indexes).to match_array([{ name: :company_id, options:  nil }]) }
+        it { expect(indexes).to match_array([:company_id]) }
+      end
+
+      context 'with foreign keys' do
+        let(:name) { 'add_avatar_id_and_email_to_user_profiles'}
+        let(:args) { ['reference_to:avatars', 'string'] }
+
+        it { expect(attributes).to match_array([{ name: :email, type: 'String', options: {} }]) }
+        it { expect(indexes).to match_array([:avatar_id]) }
+        it { expect(foreign_keys).to match_array([{ name: :avatar_id, table: :avatars }]) }
       end
 
       context 'with types' do
@@ -53,7 +63,7 @@ describe Sequelize::Migrator::MigrationAttributes do
 
         it 'should add index to the list of indexes' do
           instance.add_index(:user_id)
-          expect(indexes).to match_array([{ name: :user_id, options: {} }])
+          expect(indexes).to match_array([:user_id])
         end
       end
     end
@@ -65,7 +75,15 @@ describe Sequelize::Migrator::MigrationAttributes do
         let(:args) { ['name:text', 'age:integer:index'] }
 
         it { expect(attributes).to match_array([{ name: :name, type: 'String', options: {} }, {name: :age, type: 'Fixnum', options: {} }]) }
-        it { expect(indexes).to match_array([{ name: :age, options:  {} }]) }
+        it { expect(indexes).to match_array([:age]) }
+      end
+
+      context 'with foreign keys' do
+        let(:args) { ['name:text', 'avatar_id:reference_to:avatars'] }
+
+        it { expect(attributes).to match_array([{ name: :name, type: 'String', options: {} }]) }
+        it { expect(indexes).to match_array([:avatar_id]) }
+        it { expect(foreign_keys).to match_array([{ name: :avatar_id, table: :avatars }]) }
       end
 
       context 'with types' do
@@ -142,6 +160,7 @@ describe Sequelize::Migrator::MigrationAttributes do
         it { expect(normalized).to eql('Time') }
       end
     end
+
     context 'string conversion' do
       context 'when full string given' do
         let(:type) { 'string(255)' }
@@ -155,11 +174,6 @@ describe Sequelize::Migrator::MigrationAttributes do
 
       context 'when char given' do
         let(:type) { 'char(50)' }
-        it { expect(normalized).to eql('String') }
-      end
-
-      context 'when full char given' do
-        let(:type) { 'char(255)' }
         it { expect(normalized).to eql('String') }
       end
     end
@@ -182,7 +196,14 @@ describe Sequelize::Migrator::MigrationAttributes do
         it { expect(normalized).to eql('TrueClass') }
       end
     end
-      # primary key?
+
+    context 'other conversions' do
+      context 'specific unknown type' do
+        let(:type) { 'sometype' }
+
+        it { expect(normalized).to eql('sometype') }
+      end
+    end
   end
 
   describe '.extract_options' do
@@ -202,7 +223,7 @@ describe Sequelize::Migrator::MigrationAttributes do
 
         context 'when char given' do
           let(:args) { ['char(255)'] }
-          it { expect(options).to eql({ fixed: true }) }
+          it { expect(options).to eql({ fixed: true, size: 255 }) }
         end
 
         context 'when sized char given' do
@@ -227,7 +248,7 @@ describe Sequelize::Migrator::MigrationAttributes do
           let(:args) { [ 'age:integer:index', 'name:char(50):fixed' ] }
 
           it 'should has age index' do
-            expect(indexes).to match_array([{ name: :age, options: {} }])
+            expect(indexes).to match_array([:age])
           end
 
           it 'should has attributes with right properties' do
