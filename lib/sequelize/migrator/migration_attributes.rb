@@ -4,8 +4,6 @@ module Sequelize
 
       Attribute = Struct.new(:name, :type, :options)
 
-      Index = []
-
       ForeignKey = Struct.new(:name, :table)
 
       Types = { 'string'    => 'String',
@@ -21,16 +19,18 @@ module Sequelize
                 'time'      => 'Time',
                 'bool'      => 'TrueClass',
                 'boolean'   => 'TrueClass',
-                'blob'      => 'File' }
+                'blob'      => 'File' }.freeze
+
+      LENGTH_REGEXP = /\([0-9]+\)/
  
       attr_reader :attributes, :indexes, :foreign_keys
 
       ##
-      # Returns {String} - normalized name of type
+      # Returns: {String} normalized name of type
       #
       def self.normalize_type(type)
         if type
-          clear_type = type.gsub(/\([0-9]+\)/, '')
+          clear_type = type.gsub(LENGTH_REGEXP, '')
 
           Types.has_key?(clear_type) ? Types[clear_type] : clear_type 
         end
@@ -79,12 +79,10 @@ module Sequelize
       end
 
       ##
-      # Returns {Array} - splited params array
+      # Returns: {Array} splited params array
       # 
       def tokenize_params(params)
-        params ||= ''
-
-        params.split(':')
+        (params || '').split(':')
       end
 
       ##
@@ -92,13 +90,12 @@ module Sequelize
       # and add new foreign key or attribute
       #
       def parse_item(name, params)
-        type = self.class.normalize_type(params[0])
-
-        if type == 'reference_to'
+        if params[0] == 'reference_to'
           table = params[1].to_sym
 
           add_reference(name, table)
         else
+          type = self.class.normalize_type(params[0])
           options = extract_options(params, name)
 
           add_attribute(name, type, options)
@@ -131,12 +128,11 @@ module Sequelize
       #
       def attribute_length(attribute_name)
         if attribute_name
-          length = attribute_name.scan(/[0-9]+/).first
+          length = attribute_name.scan(LENGTH_REGEXP).first
 
-          length.to_i if length
+          length.slice(1..-1).to_i if length
         end
       end
-
     end
   end
 end
