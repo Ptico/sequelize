@@ -68,19 +68,13 @@ module Sequelize
 
         @indexes = @naming.indexes
 
-        if with_names? # types contain attributes names
-          args.each do |item|
-            params = tokenize_params(item)
-            name = params.shift.to_sym
+        attributes_count = [args.size, @naming.columns.size].max
 
-            parse_item(name, params)
-          end
-        else
-          @naming.columns.each_with_index do |column, index|
-            params = args[index]
+        attributes_count.times.each do |index|
+          params = tokenize_params(args[index])
+          name = (@naming.columns.to_a[index] || params.shift.to_sym)
 
-            parse_item(column, tokenize_params(params))
-          end
+          parse_item(name, params)
         end
       end
 
