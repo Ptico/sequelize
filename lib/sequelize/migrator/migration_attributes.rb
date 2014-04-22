@@ -126,14 +126,6 @@ module Sequelize
       end
 
       ##
-      # Returns: {Bool} true if name of migration
-      # contains names of attributes
-      #
-      def with_names?
-        @naming.table_action == 'create_table'
-      end
-
-      ##
       # Returns: {Fixnum} length option of attribute
       # Example: 'char(250)' => 250
       #
