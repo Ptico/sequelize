@@ -1,84 +1,96 @@
+require 'pry'
 module Sequelize
   class ConnectionOptions
     class Base
       include Adamantium
+      
+      def self.property(name)
+        memoize name
+        @properties = [] unless @properties
+        @properties << name
+      end
 
       def adapter
         config[:adapter]
       end
-      memoize :adapter
+      property :adapter
 
       def database
         config[:database] || config[:dbname]
       end
-      memoize :database
+      property :database
 
       def username
         config[:username] || config[:user] || ''
       end
-      memoize :username
+      property :username
 
       def password
         config[:password] || config[:pass] || ''
       end
-      memoize :password
+      property :password
 
       def host
         config[:host] || config[:socket]
       end
-      memoize :host
+      property :host
 
       def port
         config[:port].to_i if config[:port]
       end
-      memoize :port
+      property :port
 
       def owner
         config[:owner]
       end
-      memoize :owner
+      property :owner
 
       def charset
         config[:charset] || config[:encoding] || 'utf8'
       end
-      memoize :charset
+      property :charset
 
       def collation
         config[:collation]
       end
-      memoize :collation
+      property :collation
 
       def servers
         config[:servers]
       end
-      memoize :servers
+      property :servers
 
       def single_threaded
         config[:single_threaded]
       end
-      memoize :single_threaded
+      property :single_threaded
 
       def test
         config[:test]
       end
-      memoize :test
+      property :test
 
       def max_connections
         config[:max_connections]
       end
-      memoize :max_connections
+      property :max_connections
 
       def pool_sleep_time
         config[:pool_sleep_time]
       end
-      memoize :pool_sleep_time
+      property :pool_sleep_time
 
       def pool_timeout
         config[:pool_timeout]
       end
-      memoize :pool_timeout
+      property :pool_timeout
 
       def to_hash
+        properties = (self.class.instance_variable_get(:@properties) || [])
+        parent_properties = self.class.superclass.instance_variable_get(:@properties)
+        
+        properties += parent_properties if parent_properties
+
         properties.each_with_object({}) do |prop, hash|
           value = public_send(prop)
           hash[prop] = value if value
@@ -91,14 +103,8 @@ module Sequelize
       attr_reader :config
 
       def initialize(config)
-        @config = config
+        @config   = config
       end
-
-      def properties
-        [:adapter, :database, :username, :password, :host, :port, :owner, :charset, :collation, :servers, :single_threaded, :test, :max_connections, :pool_sleep_time, :pool_timeout]
-      end
-      memoize :properties
     end
-
   end
 end
