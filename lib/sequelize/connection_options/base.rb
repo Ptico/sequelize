@@ -5,7 +5,8 @@ module Sequelize
       include Adamantium
       
       def self.property(name)
-        memoize name
+        memoize(name)
+
         @properties = [] unless @properties
         @properties << name
       end
@@ -86,11 +87,6 @@ module Sequelize
       property :pool_timeout
 
       def to_hash
-        properties = (self.class.instance_variable_get(:@properties) || [])
-        parent_properties = self.class.superclass.instance_variable_get(:@properties)
-        
-        properties += parent_properties if parent_properties
-
         properties.each_with_object({}) do |prop, hash|
           value = public_send(prop)
           hash[prop] = value if value
@@ -101,6 +97,13 @@ module Sequelize
     private
 
       attr_reader :config
+
+      def properties
+        class_properties = (self.class.instance_variable_get(:@properties) || [])
+        parent_properties = (self.class.superclass.instance_variable_get(:@properties) || [])
+        
+        class_properties | parent_properties
+      end
 
       def initialize(config)
         @config   = config
