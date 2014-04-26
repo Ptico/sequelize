@@ -124,7 +124,10 @@ module Sequelize
 
       ##
       # Returns: {Fixnum} length option of attribute
-      # Example: 'char(250)' => 250
+      # Examples: 
+      #
+      #     attribute_length('char(250)')
+      #     # => 250
       #
       def attribute_length(attribute_name)
         if attribute_name

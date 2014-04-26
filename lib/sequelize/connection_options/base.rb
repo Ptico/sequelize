@@ -7,7 +7,7 @@ module Sequelize
       def self.property(name)
         memoize(name)
 
-        @properties = [] unless @properties
+        @properties ||= []
         @properties << name
       end
 
@@ -99,14 +99,14 @@ module Sequelize
       attr_reader :config
 
       def properties
-        class_properties = (self.class.instance_variable_get(:@properties) || [])
+        class_properties  = (self.class.instance_variable_get(:@properties) || [])
         parent_properties = (self.class.superclass.instance_variable_get(:@properties) || [])
         
         class_properties | parent_properties
       end
 
       def initialize(config)
-        @config   = config
+        @config = config
       end
     end
   end
