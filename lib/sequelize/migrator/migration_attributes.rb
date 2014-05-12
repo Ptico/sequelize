@@ -26,6 +26,14 @@ module Sequelize
       attr_reader :attributes, :indexes, :foreign_keys
 
       ##
+      # Params:
+      # - type {String} type of attribute option
+      #
+      # Examples:
+      #   normalize_type('bigint') # => 'Bignum'
+      #   
+      #   normalize_type('specific_type') # => 'specific_type'
+      #
       # Returns: {String} normalized name of type
       #
       def self.normalize_type(type)
@@ -39,6 +47,9 @@ module Sequelize
       ##
       # Add new index
       #
+      # Params:
+      # - name {String} name of index
+      #
       def add_index(name)
         @indexes << name.to_sym
       end
@@ -46,12 +57,23 @@ module Sequelize
       ##
       # Add new attribute
       #
+      # Params:
+      # - name {Symbol} name of attribute
+      #
+      # Options:
+      # - type {String} normalized type of attribute
+      # - options {Hash} additional aptions for attribute
+      #
       def add_attribute(name, type=nil, options={})
         @attributes << Attribute.new(name, type, options)
       end
 
       ##
       # Add new foreign key
+      #
+      # Params:
+      # - name  {Symbol} name of reference column
+      # - table {Symbol} name of table
       #
       def add_reference(name, table)
         @foreign_keys << ForeignKey.new(name, table)
@@ -68,9 +90,10 @@ module Sequelize
 
         @indexes = @naming.indexes
 
+
         attributes_count = [args.size, @naming.columns.size].max
 
-        attributes_count.times.each do |index|
+        attributes_count.times do |index|
           params = tokenize_params(args[index])
           name = (@naming.columns.to_a[index] || params.shift.to_sym)
 
@@ -79,6 +102,11 @@ module Sequelize
       end
 
       ##
+      # Private: make an array of parameters from parameters string
+      #
+      # Params:
+      # - params {String} params string
+      #
       # Returns: {Array} splited params array
       # 
       def tokenize_params(params)
@@ -86,8 +114,12 @@ module Sequelize
       end
 
       ##
-      # Parse item
+      # Private: parse item
       # and add new foreign key or attribute
+      #
+      # Params:
+      # - name {Symbol} name of attribute
+      # - params {Array} array of string with parameters
       #
       def parse_item(name, params)
         if params[0] == 'reference_to'
@@ -103,6 +135,12 @@ module Sequelize
       end
 
       ##
+      # Private: parse options
+      #
+      # Params:
+      # - options_array {Array} array of strings with options
+      # - name {Symbol} name of attribute
+      #
       # Returns: {Hash} options of attribute
       #
       def extract_options(options_array, name)
@@ -123,11 +161,14 @@ module Sequelize
       end
 
       ##
-      # Returns: {Fixnum} length option of attribute
+      # Private: extract attribute paramater "length" from type
+      #
       # Examples: 
       #
       #     attribute_length('char(250)')
       #     # => 250
+      #
+      # Returns: {Fixnum} length option of attribute
       #
       def attribute_length(attribute_name)
         if attribute_name
