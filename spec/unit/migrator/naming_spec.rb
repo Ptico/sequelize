@@ -134,12 +134,13 @@ describe Sequelize::Migrator::Naming do
     context 'Add many' do
       let(:name) { 'add_company_id_index_and_company_name_to_user_profiles' }
 
-      it { expect(subject.use_change?).to  be(true) }
-      it { expect(subject.table_name).to   eql('user_profiles') }
-      it { expect(subject.table_action).to eql('alter_table') }
-      it { expect(subject.index_action).to eql('create_index') }
-      it { expect(subject.indexes).to      contain_exactly(:company_id) }
-      it { expect(subject.columns).to      contain_exactly(:company_name) }
+      it { expect(subject.use_change?).to   be(true) }
+      it { expect(subject.table_name).to    eql('user_profiles') }
+      it { expect(subject.table_action).to  eql('alter_table') }
+      it { expect(subject.index_action).to  eql('create_index') }
+      it { expect(subject.column_action).to eql('add_column') }
+      it { expect(subject.indexes).to       contain_exactly(:company_id) }
+      it { expect(subject.columns).to       contain_exactly(:company_name) }
 
     end
 
