@@ -10,38 +10,32 @@ module Sequelize
       def encoding
         config[:encoding] || charset
       end
-      memoize :encoding
+      property :encoding
 
       def locale
         config[:locale]
       end
-      memoize :locale
+      property :locale
 
       def ctype
         config[:ctype]
       end
-      memoize :ctype
+      property :ctype
 
       def template
         config[:template]
       end
-      memoize :template
+      property :template
 
       def tablespace
         config[:tablespace]
       end
-      memoize :tablespace
+      property :tablespace
 
       def maintenance_db
         config[:maintenance_db]
       end
-      memoize :maintenance_db
-
-    private
-
-      def properties
-        super + [:encoding, :locale, :ctype, :template, :tablespace, :maintenance_db]
-      end
+      property :maintenance_db
 
     end
   end
