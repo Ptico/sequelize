@@ -57,7 +57,7 @@ module Sequelize
       end
 
       ##
-      # Returns: {Set} column names list
+      # Returns: column action name
       #
       def column_action
         use_change? ? "#{@action}_column" : 'drop_column'

@@ -22,7 +22,7 @@ module Sequelize
                 'blob'      => 'File' }.freeze
 
       LENGTH_REGEXP = /\([0-9]+\)/
- 
+
       attr_reader :attributes, :indexes, :foreign_keys
 
       ##
@@ -31,7 +31,7 @@ module Sequelize
       #
       # Examples:
       #   normalize_type('bigint') # => 'Bignum'
-      #   
+      #
       #   normalize_type('specific_type') # => 'specific_type'
       #
       # Returns: {String} normalized name of type
@@ -40,7 +40,7 @@ module Sequelize
         if type
           clear_type = type.gsub(LENGTH_REGEXP, '')
 
-          Types.has_key?(clear_type) ? Types[clear_type] : clear_type 
+          Types.has_key?(clear_type) ? Types[clear_type] : clear_type
         end
       end
 
@@ -90,7 +90,6 @@ module Sequelize
 
         @indexes = @naming.indexes
 
-
         attributes_count = [args.size, @naming.columns.size].max
 
         attributes_count.times do |index|
@@ -108,7 +107,7 @@ module Sequelize
       # - params {String} params string
       #
       # Returns: {Array} splited params array
-      # 
+      #
       def tokenize_params(params)
         (params || '').split(':')
       end
@@ -163,7 +162,7 @@ module Sequelize
       ##
       # Private: extract attribute paramater "length" from type
       #
-      # Examples: 
+      # Examples:
       #
       #     attribute_length('char(250)')
       #     # => 250

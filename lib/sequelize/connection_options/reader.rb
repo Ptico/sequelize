@@ -52,8 +52,10 @@ module Sequelize
             when '.json'
               read_json_config
           end
-        else
+        elsif ENV['DB'] || ENV['DATABASE_URL']
           read_env_config
+        else
+          fail('Database is not configured')
         end
       end
 
